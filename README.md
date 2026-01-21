@@ -22,9 +22,3 @@ Each demo lives in `src/demos/<demo-name>` and can be run with:
 ```bash
 bun run src/demos/<demo-name>/index.ts
 ```
-
-## Project Structure
-
-- `src/demos/` - Individual demo projects
-- `src/utils/` - Shared utilities
-- `src/resources/` - Shared resources (e.g., Blnk SDK instance)
