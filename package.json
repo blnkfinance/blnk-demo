@@ -1,0 +1,19 @@
+{
+  "name": "blnk-demo",
+  "version": "0.1.0",
+  "description": "Lightweight, end-to-end Blnk demos",
+  "type": "module",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "module": "index.ts",
+  "private": true
+}
