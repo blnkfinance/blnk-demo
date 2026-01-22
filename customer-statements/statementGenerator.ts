@@ -1,4 +1,4 @@
-import { blnk } from "@resources/blnk.ts";
+import { blnk } from "@resources/utils.ts";
 import { query } from "@resources/db.ts";
 import { toDisplayAmount, formatTimestamp, getDirection, getCurrencyPrecision } from "@resources/formatters.ts";
 

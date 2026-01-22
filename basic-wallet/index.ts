@@ -1,4 +1,4 @@
-import { blnk } from "@resources/blnk.ts";
+import { blnk } from "@resources/utils.ts";
 import { generateReference } from "@resources/generator.ts";
 
 async function main() {
