@@ -1,14 +1,46 @@
 import { Pool } from "pg";
 import type { PoolClient, QueryResult, QueryResultRow } from "pg";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { readFileSync } from "fs";
 
-// Bun automatically loads .env from the project root
+/**
+ * Load .env file from the resources directory
+ */
+function loadEnvFromResources(): void {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const envPath = join(__dirname, ".env");
+    
+    try {
+        const envFile = readFileSync(envPath, "utf-8");
+        for (const line of envFile.split("\n")) {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith("#")) {
+                const [key, ...valueParts] = trimmed.split("=");
+                if (key && valueParts.length > 0) {
+                    const value = valueParts.join("=").trim();
+                    if (!process.env[key]) {
+                        process.env[key] = value;
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        // .env file doesn't exist, that's okay - will use process.env or throw later
+    }
+}
+
+// Load .env from resources directory
+loadEnvFromResources();
+
 const dbUrl = process.env.BLNK_DB_URL;
 
 if (!dbUrl) {
     throw new Error(
         "BLNK_DB_URL environment variable is required. " +
-        "Please create a .env file in the project root with your database connection string. " +
-        "See .env.example for the required format."
+        "Please create a .env file in the resources directory with your database connection string. " +
+        "See resources/.env.example for the required format."
     );
 }
 

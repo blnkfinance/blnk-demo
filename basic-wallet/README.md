@@ -24,10 +24,25 @@ The demo follows this sequence:
 6. Transfers $25.00 from the main wallet to the card wallet
 7. Displays the final balances for both wallets
 
-## Running the Demo
+## How to run
+
+We recommend using Bun to run this demo directly:
 
 ```bash
 bun basic-wallet
 ```
 
-Make sure you have set up your `.env` file with `BLNK_API_KEY` and `BLNK_BASE_URL` before running.
+## Setup
+
+Before running, set up your environment variables:
+
+1. Copy the example environment file:
+   ```bash
+   cp basic-wallet/.env.example basic-wallet/.env
+   ```
+
+2. Edit `basic-wallet/.env` with your Blnk API credentials:
+   ```
+   BLNK_API_KEY=your_blnk_api_key_here
+   BLNK_BASE_URL=https://api.blnk.finance
+   ```

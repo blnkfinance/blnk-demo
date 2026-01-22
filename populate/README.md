@@ -29,9 +29,16 @@ Before running this demo, ensure you have:
 - Your Blnk Core instance running
 - Environment variables configured (see below)
 
-## Required Environment Variables
+## Setup
 
-Add these to your `.env` file:
+Before running, set up your environment variables:
+
+1. Copy the example environment file:
+   ```bash
+   cp populate/.env.example populate/.env
+   ```
+
+2. Edit `populate/.env` with your configuration:
 
 ```
 BLNK_API_KEY=your_blnk_api_key_here
@@ -45,7 +52,9 @@ POPULATE_AMOUNT_MAX=50000
 POPULATE_USE_INTERNAL_BALANCES=false
 ```
 
-## Running the Demo
+## How to run
+
+We recommend using Bun to run this demo directly:
 
 ```bash
 bun populate

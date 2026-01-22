@@ -32,9 +32,16 @@ Before running this demo, ensure you have:
 - Postgres database with transaction data
 - Environment variables configured (see below)
 
-## Required Environment Variables
+## Setup
 
-Add these to your `.env` file:
+Before running, set up your environment variables:
+
+1. Copy the example environment file:
+   ```bash
+   cp customer-statements/.env.example customer-statements/.env
+   ```
+
+2. Edit `customer-statements/.env` with your configuration:
 
 ```
 BLNK_API_KEY=your_blnk_api_key_here
@@ -53,7 +60,9 @@ const PERIOD_START = "2026-01-01T00:00:00Z";
 const PERIOD_END = "2026-01-31T23:59:59Z";
 ```
 
-## Running the Demo
+## How to run
+
+We recommend using Bun to run this demo directly:
 
 Generate a CSV statement (default):
 ```bash
