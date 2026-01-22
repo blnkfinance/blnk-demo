@@ -17,8 +17,8 @@ This repository contains lightweight, end-to-end Blnk demos designed to help dev
 
 ## Running Demos
 
-Each demo lives in `src/demos/<demo-name>` and can be run with:
+Each demo lives in its own folder at the root (e.g., `basic-wallet/`, `customer-statements/`) and can be run with:
 
 ```bash
-bun run src/demos/<demo-name>/index.ts
+bun <demo-name>
 ```

@@ -57,12 +57,12 @@ const PERIOD_END = "2026-01-31T23:59:59Z";
 
 Generate a CSV statement (default):
 ```bash
-bun run src/demos/customer-statements/index.ts
+bun customer-statements
 ```
 
 Generate a PDF statement:
 ```bash
-bun run src/demos/customer-statements/index.ts --format=pdf
+bun customer-statements --format=pdf
 ```
 
 The generated statement file will be saved in the current working directory with a filename like:

@@ -27,7 +27,7 @@ The demo follows this sequence:
 ## Running the Demo
 
 ```bash
-bun run src/demos/wallets/index.ts
+bun basic-wallet
 ```
 
 Make sure you have set up your `.env` file with `BLNK_API_KEY` and `BLNK_BASE_URL` before running.
