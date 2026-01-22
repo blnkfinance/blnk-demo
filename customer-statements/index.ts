@@ -1,14 +1,25 @@
 import { generateStatement } from "./statementGenerator.ts";
 import { exportToCSV, exportToPDF } from "./exporters.ts";
 
-// Configuration - Edit these values to customize the statement
-const BALANCE_ID = "bln_...";
-const CURRENCY = "USD";
-const PERIOD_START = "2026-01-01T00:00:00Z";
-const PERIOD_END = "2026-01-31T23:59:59Z";
+// Configuration - Load from environment variables
+const BALANCE_ID = process.env.STATEMENT_BALANCE_ID;
+const CURRENCY = process.env.STATEMENT_CURRENCY || "USD";
+const PERIOD_START = process.env.STATEMENT_PERIOD_START;
+const PERIOD_END = process.env.STATEMENT_PERIOD_END;
 
 async function main() {
     try {
+        // Validate required configuration
+        if (!BALANCE_ID) {
+            throw new Error("STATEMENT_BALANCE_ID environment variable is required");
+        }
+        if (!PERIOD_START) {
+            throw new Error("STATEMENT_PERIOD_START environment variable is required");
+        }
+        if (!PERIOD_END) {
+            throw new Error("STATEMENT_PERIOD_END environment variable is required");
+        }
+
         // Parse command-line arguments
         const formatArg = process.argv.find((arg) => arg.startsWith("--format="));
         const format = formatArg?.split("=")[1] || "csv";

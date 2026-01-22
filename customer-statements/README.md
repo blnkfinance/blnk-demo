@@ -38,10 +38,10 @@ Before running, set up your environment variables:
 
 1. Copy the example environment file:
    ```bash
-   cp customer-statements/.env.example customer-statements/.env
+   cp .env.example .env
    ```
 
-2. Edit `customer-statements/.env` with your configuration:
+2. Edit `.env` with your configuration:
 
 ```
 BLNK_API_KEY=your_blnk_api_key_here
@@ -64,14 +64,28 @@ const PERIOD_END = "2026-01-31T23:59:59Z";
 
 We recommend using Bun to run this demo directly:
 
-Generate a CSV statement (default):
 ```bash
-bun customer-statements
+bun index.ts
 ```
 
 Generate a PDF statement:
 ```bash
-bun customer-statements --format=pdf
+bun index.ts --format=pdf
+```
+
+If you don't have Bun installed, install it first:
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Alternatively, you can use:
+```bash
+npx tsx index.ts
+```
+
+Or for PDF:
+```bash
+npx tsx index.ts --format=pdf
 ```
 
 The generated statement file will be saved in the current working directory with a filename like:

@@ -69,54 +69,6 @@ export function generateInternalBalanceId(): string {
     return "@" + generateRandomAlphanumeric(30);
 }
 
-/**
- * Search for ledger by name, create if not found, return ledger ID
- */
-export async function ensureLedger(ledgerName: string): Promise<string> {
-    const { blnk } = await import("@resources/utils.ts");
-
-    try {
-        // Search for existing ledger by name
-        const searchResponse = await blnk.post("/search/ledgers", {
-            q: ledgerName,
-            query_by: "name",
-        });
-
-        const hits = searchResponse.data?.hits || [];
-        if (hits.length > 0) {
-            const ledger = hits[0].document || hits[0];
-            const ledgerId = ledger.ledger_id;
-            if (ledgerId) {
-                log(`Found existing ledger: ${ledgerId}`, "success");
-                return ledgerId;
-            }
-        }
-    } catch (error: any) {
-        // If search fails, try to create new ledger
-        log(`Ledger search failed, will create new one: ${error.message}`, "warning");
-    }
-
-    // Create new ledger if not found
-    try {
-        log(`Creating new ledger: ${ledgerName}`, "info");
-        const createResponse = await blnk.post("/ledgers", {
-            name: ledgerName,
-            meta_data: {
-                description: "Ledger created by blnk-populate-demo",
-            },
-        });
-
-        const ledgerId = createResponse.data.ledger_id;
-        if (!ledgerId) {
-            throw new Error("Failed to create ledger: ledger_id is missing from response");
-        }
-
-        log(`Ledger created: ${ledgerId}`, "success");
-        return ledgerId;
-    } catch (error: any) {
-        throw new Error(`Failed to create ledger: ${error.message}`);
-    }
-}
 
 /**
  * Generate random merchant/vendor name using faker

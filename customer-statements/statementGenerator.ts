@@ -1,6 +1,6 @@
 import { blnk } from "@resources/utils.ts";
 import { query } from "@resources/db.ts";
-import { toDisplayAmount, formatTimestamp, getDirection, getCurrencyPrecision } from "@resources/formatters.ts";
+import { toDisplayAmount, formatAmount, formatTimestamp, getDirection, getCurrencyPrecision } from "@resources/formatters.ts";
 
 interface Transaction {
     effective_date: string;
@@ -56,7 +56,7 @@ async function fetchBalanceDetails(balanceId: string): Promise<string> {
         const response = await blnk.post("/search/balances", {
             q: balanceId,
             query_by: "balance_id",
-            include_fields: ["$identities(first_name,last_name)"],
+            include_fields: "$identities(first_name,last_name)",
         });
 
         const hits = response.data?.hits || [];
@@ -71,7 +71,8 @@ async function fetchBalanceDetails(balanceId: string): Promise<string> {
             return `${identity.first_name} ${identity.last_name}`;
         }
 
-        return balanceId;
+        // If no identity, return the indicator if available, otherwise fall back to balanceId
+        return balance.indicator || balanceId;
     } catch (error) {
         console.warn(`Failed to fetch balance details for ${balanceId}:`, error);
         return balanceId;
@@ -131,7 +132,7 @@ async function queryTransactions(
             amount,
             currency,
             precision
-        FROM transactions
+        FROM blnk.transactions
         WHERE status = 'APPLIED'
             AND currency = $1
             AND (source = $2 OR destination = $2)
@@ -206,7 +207,18 @@ export async function generateStatement(
     for (const tx of transactions) {
         const direction = getDirection(tx, balanceId);
         const counterpartyId = getCounterpartyId(tx, balanceId);
-        const counterparty = await fetchBalanceDetails(counterpartyId);
+        let counterparty = await fetchBalanceDetails(counterpartyId);
+        
+        // If counterparty ID contains "world", determine if it's Deposit or Withdrawal
+        if (counterparty.toLowerCase().includes("world")) {
+            // If counterparty was the source, balance received money (Deposit)
+            // If counterparty was the destination, balance sent money (Withdrawal)
+            if (tx.source === counterpartyId) {
+                counterparty = "Deposit";
+            } else if (tx.destination === counterpartyId) {
+                counterparty = "Withdrawal";
+            }
+        }
 
         formattedTransactions.push({
             timestamp: formatTimestamp(tx.effective_date),
@@ -214,7 +226,7 @@ export async function generateStatement(
             description: tx.description,
             direction,
             counterparty,
-            amount: toDisplayAmount(tx.amount, precision),
+            amount: formatAmount(tx.amount),
             currency: tx.currency,
         });
     }

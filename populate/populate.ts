@@ -1,5 +1,4 @@
 import { log } from "@resources/utils.ts";
-import { ensureLedger } from "./helpers.ts";
 import { simulateOnboarding } from "./onboarding.ts";
 import { simulateTransactions } from "./transactions.ts";
 
@@ -33,9 +32,9 @@ export async function populate(
     try {
         log("Starting Blnk instance population...", "info");
 
-        // Ensure ledger exists (search by name, create if not found)
-        log("\nPhase 0: Ensuring ledger exists...", "info");
-        const ledgerId = await ensureLedger(ledgerName);
+        // Use hardcoded General Ledger ID
+        const ledgerId = "general_ledger_id"; 
+        log(`Using General Ledger: ${ledgerId}`, "info");
 
         let onboardingResult;
         let balances: Array<{ id: string; currency: string }> = [];

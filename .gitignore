@@ -25,5 +25,5 @@ pnpm-debug.log*
 #Rules
 AGENTS.md
 
-# Temp
-populate-ref/
+# Output
+output/

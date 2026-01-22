@@ -35,10 +35,10 @@ Before running, set up your environment variables:
 
 1. Copy the example environment file:
    ```bash
-   cp populate/.env.example populate/.env
+   cp .env.example .env
    ```
 
-2. Edit `populate/.env` with your configuration:
+2. Edit `.env` with your configuration:
 
 ```
 BLNK_API_KEY=your_blnk_api_key_here
@@ -57,7 +57,17 @@ POPULATE_USE_INTERNAL_BALANCES=false
 We recommend using Bun to run this demo directly:
 
 ```bash
-bun populate
+bun index.ts
+```
+
+If you don't have Bun installed, install it first:
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Alternatively, you can use:
+```bash
+npx tsx index.ts
 ```
 
 The script will:

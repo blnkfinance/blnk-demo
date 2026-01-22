@@ -106,16 +106,30 @@ export async function exportToPDF(statement: Statement): Promise<string> {
     // Table rows
     doc.font("Helvetica").fontSize(9);
     let y = tableTop + 20;
+    const rowHeight = 15;
+    const pageBottom = 750;
+    
     statement.transactions.forEach((tx) => {
-        if (y > 750) {
+        // Check if the entire row will fit on the current page before rendering
+        if (y + rowHeight > pageBottom) {
             doc.addPage();
-            y = 50;
+            // Re-print headers on new page
+            doc.fontSize(10).font("Helvetica-Bold");
+            const newTableTop = 50;
+            x = 50;
+            headers.forEach((header, i) => {
+                const width = colWidths[i] ?? 100;
+                doc.text(header, x, newTableTop, { width });
+                x += width;
+            });
+            doc.font("Helvetica").fontSize(9);
+            y = newTableTop + 20;
         }
 
         x = 50;
         const rowData = [
             tx.timestamp.split(" ")[0], // Date only
-            tx.reference,
+            tx.reference.substring(0, 20), // Truncate reference
             tx.description.substring(0, 20),
             tx.direction,
             tx.counterparty.substring(0, 15),
@@ -129,7 +143,7 @@ export async function exportToPDF(statement: Statement): Promise<string> {
             x += width;
         });
 
-        y += 15;
+        y += rowHeight;
     });
 
     doc.end();

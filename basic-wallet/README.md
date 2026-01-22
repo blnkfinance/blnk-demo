@@ -29,7 +29,17 @@ The demo follows this sequence:
 We recommend using Bun to run this demo directly:
 
 ```bash
-bun basic-wallet
+bun index.ts
+```
+
+If you don't have Bun installed, install it first:
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Alternatively, you can use:
+```bash
+npx tsx index.ts
 ```
 
 ## Setup
@@ -38,10 +48,10 @@ Before running, set up your environment variables:
 
 1. Copy the example environment file:
    ```bash
-   cp basic-wallet/.env.example basic-wallet/.env
+   cp .env.example .env
    ```
 
-2. Edit `basic-wallet/.env` with your Blnk API credentials:
+2. Edit `.env` with your Blnk API credentials:
    ```
    BLNK_API_KEY=your_blnk_api_key_here
    BLNK_BASE_URL=https://api.blnk.finance

@@ -6,12 +6,15 @@
  * Convert amount from precise units to display units
  * @param amount - Amount in precise units (e.g., cents)
  * @param precision - Precision multiplier (e.g., 100 for USD)
- * @returns Formatted amount as string with 2 decimal places
+ * @returns Formatted amount as string with 2 decimal places and commas
  */
 export function toDisplayAmount(amount: string | number, precision: number = 100): string {
     const numericAmount = typeof amount === "string" ? parseFloat(amount) : amount;
     const displayAmount = numericAmount / precision;
-    return displayAmount.toFixed(2);
+    return displayAmount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 }
 
 /**
@@ -48,6 +51,19 @@ export function getDirection(
         return "CR";
     }
     throw new Error(`Balance ID ${balanceId} is neither source nor destination in transaction`);
+}
+
+/**
+ * Format amount to 2 decimal places with commas (without dividing by precision)
+ * @param amount - Amount as string or number
+ * @returns Formatted amount as string with 2 decimal places and commas
+ */
+export function formatAmount(amount: string | number): string {
+    const numericAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+    return numericAmount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 }
 
 /**
