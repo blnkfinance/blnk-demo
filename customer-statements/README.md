@@ -24,7 +24,7 @@ The demo follows this sequence:
 
 ## Prerequisites
 
-**Important**: If you have no transaction data, use the populate script first to create sample data before running this demo.
+**Important**: If you don't have transaction data in your Blnk instance, use the [populate demo](../populate/) to create sample data before running this demo.
 
 Before running this demo, ensure you have:
 
