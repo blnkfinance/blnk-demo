@@ -1,0 +1,18 @@
+{
+    "name": "@blnk-demo/populate",
+    "version": "0.1.0",
+    "description": "Demo for populating Blnk instance with test data",
+    "type": "module",
+    "main": "index.ts",
+    "scripts": {
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@blnk-demo/resources": "workspace:*",
+        "@faker-js/faker": "^9.3.0"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.0.0"
+    }
+}

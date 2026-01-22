@@ -1,0 +1,5 @@
+packages:
+  - 'basic-wallet'
+  - 'customer-statements'
+  - 'populate'
+  - 'resources'

@@ -3,25 +3,13 @@
     "version": "0.1.0",
     "description": "Lightweight, end-to-end Blnk demos",
     "type": "module",
-    "scripts": {
-        "type-check": "tsc --noEmit"
-    },
+    "private": true,
     "packageManager": "pnpm@9.0.0",
+    "scripts": {
+        "type-check": "pnpm -r type-check"
+    },
     "devDependencies": {
         "@types/bun": "latest",
-        "@types/node": "^25.0.10",
-        "@types/pg": "^8.16.0",
-        "@types/pdfkit": "^0.13.0",
         "typescript": "^5.0.0"
-    },
-    "dependencies": {
-        "@faker-js/faker": "^9.3.0",
-        "axios": "^1.13.2",
-        "csv-writer": "^1.6.0",
-        "express": "^5.2.1",
-        "pdfkit": "^0.15.0",
-        "pg": "^8.17.2"
-    },
-    "module": "index.ts",
-    "private": true
+    }
 }

@@ -1,0 +1,17 @@
+{
+    "name": "@blnk-demo/basic-wallet",
+    "version": "0.1.0",
+    "description": "Basic wallet demo showing ledger, identity, and transaction creation",
+    "type": "module",
+    "main": "index.ts",
+    "scripts": {
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@blnk-demo/resources": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.0.0"
+    }
+}
