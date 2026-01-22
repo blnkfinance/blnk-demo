@@ -76,7 +76,3 @@ The script will:
 3. Create identities and balances (if not using internal balances)
 4. Generate and execute transactions
 5. Print summary statistics
-
-## Configuration Options
-
-See the root `README.md` for detailed documentation of all populate configuration variables.
