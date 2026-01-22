@@ -15,8 +15,7 @@
         "noEmit": true,
         "baseUrl": ".",
         "paths": {
-            "@resources/*": ["src/resources/*"],
-            "@utils/*": ["src/utils/*"]
+            "@resources/*": ["src/resources/*"]
         },
 
         // Best practices

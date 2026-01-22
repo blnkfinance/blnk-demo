@@ -1,5 +1,5 @@
 import { blnk } from "@resources/blnk.ts";
-import { generateReference, delay } from "@utils/main.ts";
+import { generateReference } from "@resources/generator.ts";
 
 async function main() {
     try {
@@ -95,7 +95,6 @@ async function main() {
             },
         });
         console.log(`✅ Deposit transaction created: ${depositResponse.data.transaction_id}\n`);
-        await delay(500);
 
         // Step 5: Withdraw Funds
         console.log("Step 5: Withdrawing $50.00 from main wallet...");
@@ -113,7 +112,6 @@ async function main() {
             },
         });
         console.log(`✅ Withdrawal transaction created: ${withdrawalResponse.data.transaction_id}\n`);
-        await delay(500);
 
         // Step 6: Transfer Between Wallets
         console.log("Step 6: Transferring $25.00 from main wallet to card wallet...");
