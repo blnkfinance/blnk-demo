@@ -9,36 +9,6 @@ import { readFileSync } from "fs";
 
 export { axios, type AxiosInstance };
 
-/**
- * Load .env file from the resources directory
- */
-function loadEnvFromResources(): void {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const envPath = join(__dirname, ".env");
-    
-    try {
-        const envFile = readFileSync(envPath, "utf-8");
-        for (const line of envFile.split("\n")) {
-            const trimmed = line.trim();
-            if (trimmed && !trimmed.startsWith("#")) {
-                const [key, ...valueParts] = trimmed.split("=");
-                if (key && valueParts.length > 0) {
-                    const value = valueParts.join("=").trim();
-                    if (!process.env[key]) {
-                        process.env[key] = value;
-                    }
-                }
-            }
-        }
-    } catch (error) {
-        // .env file doesn't exist, that's okay - will use process.env or throw later
-    }
-}
-
-// Load .env from resources directory
-loadEnvFromResources();
-
 const apiKey = process.env.BLNK_API_KEY;
 const baseUrl = process.env.BLNK_BASE_URL || "http://localhost:5001";
 
