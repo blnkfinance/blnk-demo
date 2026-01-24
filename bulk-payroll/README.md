@@ -41,12 +41,7 @@ Before running this demo, ensure you have:
 
 Before running, set up your environment variables:
 
-1. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Edit `.env` with your configuration:
+Add the following to your `.env` (in this directory):
 
 ```
 BLNK_API_KEY=your_blnk_api_key_here

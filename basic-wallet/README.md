@@ -46,13 +46,9 @@ npx tsx index.ts
 
 Before running, set up your environment variables:
 
-1. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
+Add the following to your `.env` (in this directory):
 
-2. Edit `.env` with your Blnk API credentials:
-   ```
-   BLNK_API_KEY=your_blnk_api_key_here
-   BLNK_BASE_URL=https://api.blnk.finance
-   ```
+```
+BLNK_API_KEY=your_blnk_api_key_here
+BLNK_BASE_URL=https://api.blnk.finance
+```

@@ -6,7 +6,7 @@ This demo runs a small HTTP server that receives **Blnk notification webhooks** 
 
 - Receiving Blnk notification webhooks (`{ event, data }`)
 - Verifying authenticity using `x-blnk-signature` + `x-blnk-timestamp`
-- Saving verified payloads to `output/`
+- Logging verified payloads to stdout
 
 ## Setup
 
@@ -21,7 +21,6 @@ cp .env.example .env
 ```bash
 PORT=3000
 WEBHOOK_PATH=/webhook
-MAX_SKEW_SECONDS=300
 BLNK_SECRET=your_strong_secret_key_here
 ```
 
@@ -61,6 +60,4 @@ expected = HMAC_SHA256(BLNK_SECRET, signed)  // hex
 ```
 
 Then compares `expected` vs `x-blnk-signature` using a constant-time comparison.
-
-Optionally, the server rejects stale requests if the timestamp is outside `MAX_SKEW_SECONDS` (default 5 minutes).
 

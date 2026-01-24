@@ -1,7 +1,4 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 const secret = process.env.BLNK_SECRET;
 if (!secret) {
@@ -14,36 +11,35 @@ if (!secret) {
 const port = parseInt(process.env.PORT || "3000", 10);
 const webhookPathRaw = process.env.WEBHOOK_PATH || "/webhook";
 const webhookPath = webhookPathRaw.startsWith("/") ? webhookPathRaw : `/${webhookPathRaw}`;
-const maxSkewSeconds = Number.isFinite(Number(process.env.MAX_SKEW_SECONDS))
-    ? parseInt(process.env.MAX_SKEW_SECONDS as string, 10)
-    : 300;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const outputDir = join(__dirname, "output");
-mkdirSync(outputDir, { recursive: true });
-
-function safeName(input: string): string {
-    const cleaned = input.trim().replace(/[^a-zA-Z0-9._-]+/g, "_");
-    return cleaned.length > 0 ? cleaned : "unknown";
+/**
+ * Shorten long strings before logging.
+ *
+ * Why this exists:
+ * - Webhook payloads can be large, and printing megabytes makes the demo hard to read.
+ * - We still want enough content in the log to understand what happened.
+ */
+function truncateForLog(input: string, maxChars: number): string {
+    if (input.length <= maxChars) return input;
+    return `${input.slice(0, maxChars)}… (truncated, len=${input.length})`;
 }
 
-function parseTimestampToMs(tsHeader: string): number | null {
-    // Common patterns: seconds (10 digits) or ms (13 digits). If it's not numeric, skip freshness checks.
-    const tsNum = Number(tsHeader);
-    if (!Number.isFinite(tsNum)) return null;
-
-    const digitsOnly = tsHeader.trim().replace(/[^0-9]/g, "");
-    if (digitsOnly.length >= 13) return tsNum;
-    return tsNum * 1000;
-}
-
+/**
+ * Compare two hex strings in constant time.
+ *
+ * Why this exists:
+ * - Naive string comparison can leak information via timing differences.
+ * - `timingSafeEqual` requires buffers of equal length, so we guard length first.
+ */
 function constantTimeEqualsHex(a: string, b: string): boolean {
     // timingSafeEqual throws if lengths differ.
     if (a.length !== b.length) return false;
     return timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
+/**
+ * Small helper to return JSON consistently from this demo server.
+ */
 function jsonResponse(status: number, body: unknown): Response {
     return new Response(JSON.stringify(body), {
         status,
@@ -73,20 +69,25 @@ const server = Bun.serve({
             });
         }
 
+        /**
+         * Signature verification must be done against the *exact raw bytes* received.
+         *
+         * Why:
+         * - If you parse JSON and then re-stringify it, whitespace and key order can change.
+         * - That would produce a different signature and make valid webhooks fail verification.
+         */
         const rawBytes = Buffer.from(await req.arrayBuffer());
         const rawBody = rawBytes.toString("utf8");
 
+        /**
+         * Blnk signs `${timestamp}.${rawBody}` using HMAC-SHA256, hex encoded.
+         *
+         * We recompute the expected signature and compare it to `x-blnk-signature`.
+         */
         const signed = `${timestamp}.${rawBody}`;
         const expectedSignature = createHmac("sha256", secret).update(signed).digest("hex");
 
-        const tsMs = parseTimestampToMs(timestamp);
-        if (tsMs !== null && maxSkewSeconds > 0) {
-            const skewMs = Math.abs(Date.now() - tsMs);
-            if (skewMs > maxSkewSeconds * 1000) {
-                return jsonResponse(401, { error: "Stale timestamp" });
-            }
-        }
-
+        // Constant-time comparison avoids leaking information via timing side channels.
         const ok = constantTimeEqualsHex(signature, expectedSignature);
         if (!ok) {
             return jsonResponse(401, { error: "Invalid signature" });
@@ -104,17 +105,21 @@ const server = Bun.serve({
             // Keep rawBody as payload if it's not valid JSON
         }
 
-        const nowIso = new Date().toISOString().replace(/[:.]/g, "-");
-        const fileName = `${nowIso}_${safeName(eventName)}.json`;
-        const filePath = join(outputDir, fileName);
+        const logBody =
+            typeof payload === "string"
+                ? truncateForLog(payload, 4_000)
+                : truncateForLog(JSON.stringify(payload), 4_000);
 
-        const toWrite =
-            typeof payload === "string" ? { raw: payload } : payload;
+        console.log(`[webhook] verified event=${eventName}`);
+        console.log(logBody);
 
-        writeFileSync(filePath, JSON.stringify(toWrite, null, 2));
-
-        console.log(`[webhook] verified event=${eventName} saved=output/${fileName}`);
-        return jsonResponse(200, { ok: true, event: eventName, saved_to: `output/${fileName}` });
+        /**
+         * Webhook endpoints should respond quickly (2xx) once verified.
+         *
+         * If you need to do heavy work (DB writes, API calls), consider doing it asynchronously
+         * so you don't cause retries due to timeouts.
+         */
+        return jsonResponse(200, { ok: true, event: eventName });
     },
 });
 
