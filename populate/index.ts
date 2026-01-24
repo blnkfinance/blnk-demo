@@ -1,7 +1,11 @@
-import { populate } from "./populate.ts";
+import { populate } from "@resources/populateDemo.ts";
 import { log } from "@resources/utils.ts";
 
-// Load environment variables with defaults
+/**
+ * Demo configuration.
+ *
+ * These knobs let you change the shape of the seeded dataset without editing code.
+ */
 const ledgerName = process.env.POPULATE_LEDGER_NAME || "Populate Demo Ledger";
 const identitiesCount = parseInt(process.env.POPULATE_IDENTITIES_COUNT || "10", 10);
 const balancesPerIdentityStr = process.env.POPULATE_BALANCES_PER_IDENTITY || "USD,EUR";
@@ -10,12 +14,12 @@ const amountMin = parseInt(process.env.POPULATE_AMOUNT_MIN || "100", 10);
 const amountMax = parseInt(process.env.POPULATE_AMOUNT_MAX || "50000", 10);
 const useInternalBalances = process.env.POPULATE_USE_INTERNAL_BALANCES === "true";
 
-// Parse balances per identity
+/** Parse currencies into a clean list. */
 const balancesPerIdentity = balancesPerIdentityStr.split(",").map((c) => c.trim()).filter((c) => c.length > 0);
 
 async function main() {
     try {
-        // Validate required configuration
+        /** Validate config early so failures are obvious and actionable. */
 
         if (identitiesCount <= 0 && !useInternalBalances) {
             throw new Error("POPULATE_IDENTITIES_COUNT must be greater than 0");
@@ -33,7 +37,12 @@ async function main() {
             throw new Error("POPULATE_AMOUNT_MIN must be greater than 0 and less than POPULATE_AMOUNT_MAX");
         }
 
-        // Run populate
+        /**
+         * Run the simulation.
+         *
+         * The heavy lifting lives in `resources/` so other demos can reuse the same
+         * data-shaping utilities without duplicating logic.
+         */
         const result = await populate(
             ledgerName,
             identitiesCount,

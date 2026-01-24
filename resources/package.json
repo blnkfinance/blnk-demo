@@ -9,10 +9,14 @@
     },
     "dependencies": {
         "axios": "^1.13.2",
+        "@faker-js/faker": "^9.3.0",
+        "csv-writer": "^1.6.0",
+        "pdfkit": "^0.15.0",
         "pg": "^8.17.2"
     },
     "devDependencies": {
         "@types/node": "^25.0.10",
+        "@types/pdfkit": "^0.13.0",
         "@types/pg": "^8.16.0",
         "typescript": "^5.0.0"
     }

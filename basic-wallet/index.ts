@@ -5,7 +5,12 @@ async function main() {
     try {
         console.log("🚀 Starting Wallets Demo\n");
 
-        // Step 1: Create a Ledger
+        /**
+         * Step 1: Create a ledger.
+         *
+         * The ledger is the accounting boundary for this demo: all wallets and
+         * money movement live under it so reporting and queries are scoped.
+         */
         console.log("Step 1: Creating a ledger...");
         const ledgerResponse = await blnk.post("/ledgers", {
             name: "Customer Wallets Ledger",
@@ -20,7 +25,12 @@ async function main() {
         }
         console.log(`✅ Ledger created: ${ledgerId}\n`);
 
-        // Step 2: Create an Identity
+        /**
+         * Step 2: Create a customer identity.
+         *
+         * Wallet balances attach to an identity so you can model “a person with
+         * multiple wallets” (main, card, savings, etc.) and keep ownership clear.
+         */
         console.log("Step 2: Creating an identity...");
         const identityResponse = await blnk.post("/identities", {
             identity_type: "individual",
@@ -38,10 +48,15 @@ async function main() {
         }
         console.log(`✅ Identity created: ${identityId}\n`);
 
-        // Step 3: Create Wallets (Balances)
+        /**
+         * Step 3: Create wallets as balances.
+         *
+         * We create two balances in the same currency to demonstrate an internal
+         * transfer (main -> card) without any FX complexity.
+         */
         console.log("Step 3: Creating wallets...");
         
-        // Main Wallet
+        /** Main wallet: the customer’s primary balance. */
         const mainWalletResponse = await blnk.post("/balances", {
             ledger_id: ledgerId,
             identity_id: identityId,
@@ -57,7 +72,7 @@ async function main() {
         }
         console.log(`✅ Main wallet created: ${mainWalletId}`);
 
-        // Card Wallet
+        /** Card wallet: a separate balance used for card spend/funding flows. */
         const cardWalletResponse = await blnk.post("/balances", {
             ledger_id: ledgerId,
             identity_id: identityId,
@@ -78,7 +93,11 @@ async function main() {
         }
         console.log(`✅ Card wallet created: ${cardWalletId}\n`);
 
-        // Step 4: Deposit Funds
+        /**
+         * Step 4: Deposit funds.
+         *
+         * Deposits come “from the outside world” into the customer’s main wallet.
+         */
         console.log("Step 4: Depositing $100.00 to main wallet...");
         const depositResponse = await blnk.post("/transactions", {
             amount: 100.00,
@@ -96,7 +115,12 @@ async function main() {
         });
         console.log(`✅ Deposit transaction created: ${depositResponse.data.transaction_id}\n`);
 
-        // Step 5: Withdraw Funds
+        /**
+         * Step 5: Withdraw funds.
+         *
+         * This is the inverse of a deposit: money leaves the wallet to an external
+         * destination. This keeps the demo symmetric and easy to reason about.
+         */
         console.log("Step 5: Withdrawing $50.00 from main wallet...");
         const withdrawalResponse = await blnk.post("/transactions", {
             amount: 50.00,
@@ -113,7 +137,12 @@ async function main() {
         });
         console.log(`✅ Withdrawal transaction created: ${withdrawalResponse.data.transaction_id}\n`);
 
-        // Step 6: Transfer Between Wallets
+        /**
+         * Step 6: Transfer between wallets.
+         *
+         * Internal transfers are useful for “funding” sub-wallets (e.g. card
+         * wallets) without involving any external rails.
+         */
         console.log("Step 6: Transferring $25.00 from main wallet to card wallet...");
         const transferResponse = await blnk.post("/transactions", {
             amount: 25.00,
