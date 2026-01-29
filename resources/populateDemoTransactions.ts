@@ -8,6 +8,16 @@ import {
   generateTransactionMetadata,
 } from "./populateDemoHelpers.ts";
 
+/**
+ * Populate demo transactions.
+ *
+ * This module creates “demo-shaped” ledger activity at scale:
+ * - Generates a mix of deposits, withdrawals, and internal transfers
+ * - Ensures currency consistency (no cross-currency transfers)
+ * - Posts transactions in large batches via `/transactions/bulk`
+ *
+ * It is optimized for clarity + speed over completeness.
+ */
 interface Balance {
   id: string;
   currency: string;
@@ -31,6 +41,13 @@ type TransactionType = "Deposit" | "Withdrawal" | "Inter";
  *
  * We batch in large chunks so you can quickly seed thousands of transactions
  * without waiting for per-transaction round trips.
+ *
+ * @param balances Balance IDs produced by onboarding (ignored when `useInternalBalances` is true).
+ * @param transactionCount Number of transactions to build.
+ * @param amountMin Minimum generated amount (paired with `precision: 100`).
+ * @param amountMax Maximum generated amount (paired with `precision: 100`).
+ * @param useInternalBalances If true, we generate unique `@...` balance IDs per transaction
+ * and pick a currency from a fixed list.
  */
 export async function simulateTransactions(
   balances: Balance[],
@@ -42,14 +59,22 @@ export async function simulateTransactions(
   try {
     log(`Starting transaction simulation for ${transactionCount} transactions`, "info");
 
+    /**
+     * Step 1: Choose a date window.
+     *
+     * We spread effective dates across ~6 months so downstream demos (statements,
+     * charts, exports) look realistic instead of “everything happened today”.
+     */
     const endDate = new Date();
     const startDate = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000);
 
     const transactions: any[] = [];
 
     /**
-     * Group balances by currency so inter-balance transfers only happen within
-     * the same currency, avoiding mismatch errors.
+     * Step 2: Group balances by currency.
+     *
+     * Inter-balance transfers only happen within the same currency.
+     * This is the simplest rule that prevents currency mismatch errors.
      */
     const balancesByCurrency: Record<string, Balance[]> = {};
     balances.forEach((balance) => {
@@ -64,6 +89,12 @@ export async function simulateTransactions(
       throw new Error("No currencies available for transactions");
     }
 
+    /**
+     * Step 3: Build a pool of transactions.
+     *
+     * We keep going even if some individual transactions can’t be created
+     * (e.g. not enough balances for an inter transfer).
+     */
     for (let i = 0; i < transactionCount; i++) {
       try {
         const transactionType = getRandomTransactionType();
@@ -83,6 +114,11 @@ export async function simulateTransactions(
       }
     }
 
+    /**
+     * Step 4: Post transactions in batches.
+     *
+     * We use the bulk endpoint to avoid per-transaction network round trips.
+     */
     const batchSize = 5000;
     const bulkResults: any[] = [];
     let totalCreated = 0;
@@ -122,6 +158,11 @@ export async function simulateTransactions(
       );
     }
 
+    /**
+     * Step 5: Summarize what happened.
+     *
+     * This keeps the demo output readable even when seeding large datasets.
+     */
     log(`\nTransaction simulation completed!`, "success");
     log(`Summary:`, "info");
     log(`  • Requested transactions: ${transactionCount}`, "info");
@@ -152,6 +193,14 @@ function getRandomTransactionType(): TransactionType {
   return types[index]!;
 }
 
+/**
+ * Build a single transaction payload.
+ *
+ * Rules:
+ * - Deposits: `@World-<currency>` -> customer balance
+ * - Withdrawals: customer balance -> `@World-<currency>`
+ * - Inter: customer balance -> customer balance (same currency)
+ */
 function buildTransaction(
   type: TransactionType,
   balancesByCurrency: Record<string, Balance[]>,
@@ -172,6 +221,11 @@ function buildTransaction(
   let destination: string;
 
   if (useInternalBalances) {
+    /**
+     * Internal balance mode:
+     * - We don't need real balances to exist ahead of time.
+     * - We generate unique IDs per transaction to simulate high-volume activity.
+     */
     if (type === "Deposit") {
       source = `@World-${currency}`;
       destination = generateInternalBalanceId();
@@ -184,6 +238,11 @@ function buildTransaction(
       while (destination === source) destination = generateInternalBalanceId();
     }
   } else {
+    /**
+     * Real balance mode:
+     * - Pick balances from the onboarding pool.
+     * - For inter transfers, ensure two distinct balances exist.
+     */
     const balances = balancesByCurrency[currency];
     if (!balances || balances.length === 0) {
       throw new Error(`No balances available for currency ${currency}`);

@@ -1,6 +1,17 @@
 import { faker } from "@faker-js/faker";
 
 /**
+ * Populate demo helpers.
+ *
+ * These helpers keep the “happy path” readable in the orchestrators by:
+ * - Generating realistic(ish) random values
+ * - Producing consistent metadata/description fields
+ * - Creating internal balance IDs when skipping onboarding
+ *
+ * They are intentionally small and “demo-shaped”.
+ */
+
+/**
  * Generate a random amount within an inclusive range.
  *
  * The populate demo uses integer amounts (paired with `precision: 100`) so the
@@ -56,6 +67,12 @@ export function generateDate(
   }
 }
 
+/**
+ * Create a random alphanumeric string used by internal balance IDs.
+ *
+ * Not exported on purpose: callers should use `generateInternalBalanceId()`
+ * so the `@...` convention stays consistent across the demo.
+ */
 function generateRandomAlphanumeric(length: number = 30): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
@@ -73,14 +90,30 @@ export function generateInternalBalanceId(): string {
   return `@${generateRandomAlphanumeric(30)}`;
 }
 
+/**
+ * Generate a merchant name.
+ *
+ * Used for card/mobile deposit/withdrawal metadata so the dataset is filterable.
+ */
 export function generateMerchantName(): string {
   return faker.company.name();
 }
 
+/**
+ * Generate a location (city).
+ *
+ * Used alongside merchant metadata to make the dataset feel less uniform.
+ */
 export function generateLocation(): string {
   return faker.location.city();
 }
 
+/**
+ * Generate a small set of tags.
+ *
+ * The tags are intentionally generic so other demos can reuse them for filtering
+ * and exporting without requiring a bespoke schema.
+ */
 export function generateTags(): string[] {
   const allTags = [
     "recurring",
@@ -100,6 +133,11 @@ export function generateTags(): string[] {
   return shuffled.slice(0, numTags);
 }
 
+/**
+ * Generate a priority label.
+ *
+ * This helps show how metadata can be used for routing/review in downstream demos.
+ */
 export function generatePriority(): "normal" | "high" | "urgent" {
   const rand = Math.random();
   if (rand < 0.1) return "urgent";
@@ -154,6 +192,11 @@ export function generateTransactionMetadata(
   return metadata;
 }
 
+/**
+ * Generate a short, human-readable description.
+ *
+ * This mirrors what many consumer/payment apps show in timelines and statements.
+ */
 export function generateTransactionDescription(
   type: "Deposit" | "Withdrawal" | "Inter",
   channel?: string,
@@ -176,16 +219,24 @@ export function generateTransactionDescription(
   return "Internal account transfer";
 }
 
+/**
+ * Pick a random entry from a list.
+ *
+ * Not exported: keeping the helper local makes the exported surface area small
+ * and avoids accidental coupling across demos.
+ */
 function getRandomChannel(channels: string[]): string {
   const index = Math.floor(Math.random() * channels.length);
   return channels[index]!;
 }
 
+/** Pick a random device label used in transaction metadata. */
 function getRandomDevice(devices: string[]): string {
   const index = Math.floor(Math.random() * devices.length);
   return devices[index]!;
 }
 
+/** Pick a random transfer purpose used for internal transfers. */
 function getRandomPurpose(): string {
   const purposes = ["account_funding", "balance_adjustment", "internal_transfer", "wallet_to_wallet"];
   const index = Math.floor(Math.random() * purposes.length);

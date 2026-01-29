@@ -6,7 +6,7 @@ import { log } from "@resources/utils.ts";
  *
  * These knobs let you change the shape of the seeded dataset without editing code.
  */
-const ledgerName = process.env.POPULATE_LEDGER_NAME || "Populate Demo Ledger";
+const ledgerName = "Customers";
 const identitiesCount = parseInt(process.env.POPULATE_IDENTITIES_COUNT || "10", 10);
 const balancesPerIdentityStr = process.env.POPULATE_BALANCES_PER_IDENTITY || "USD,EUR";
 const transactionCount = parseInt(process.env.POPULATE_TRANSACTION_COUNT || "100", 10);
@@ -44,7 +44,6 @@ async function main() {
          * data-shaping utilities without duplicating logic.
          */
         const result = await populate(
-            ledgerName,
             identitiesCount,
             balancesPerIdentity,
             transactionCount,

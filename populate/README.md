@@ -43,7 +43,6 @@ Before running, set up your environment variables:
 ```
 BLNK_API_KEY=your_blnk_api_key_here
 BLNK_BASE_URL=https://api.blnk.finance
-POPULATE_LEDGER_NAME=Populate Demo Ledger
 POPULATE_IDENTITIES_COUNT=10
 POPULATE_BALANCES_PER_IDENTITY=USD,EUR
 POPULATE_TRANSACTION_COUNT=100
@@ -72,7 +71,7 @@ npx tsx index.ts
 
 The script will:
 1. Validate configuration
-2. Ensure ledger exists (search by name, create if needed)
+2. Create one ledger per currency (e.g. `Customers USD Ledger`)
 3. Create identities and balances (if not using internal balances)
 4. Generate and execute transactions
 5. Print summary statistics
