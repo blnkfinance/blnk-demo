@@ -1,0 +1,17 @@
+{
+  "name": "@blnk-demo/ecommerce-rewards",
+  "version": "0.1.0",
+  "description": "E-commerce reward system: issue and redeem points on purchase, track balances",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@blnk-demo/resources": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}
