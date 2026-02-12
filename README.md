@@ -2,6 +2,15 @@
 
 This repository contains lightweight, end-to-end Blnk demos designed to help developers understand how Blnk works in practice. Each demo is a self-contained example that demonstrates a specific Blnk workflow or use case.
 
+## Demos
+
+- **basic-wallet** – Create ledgers, identities, and wallets; deposits, withdrawals, and internal transfers
+- **bulk-payroll** – Run payroll across multiple countries and currencies with bulk transactions
+- **customer-statements** – Generate customer statements from ledger data
+- **ecommerce-rewards** – Ledger-backed reward system: issue and redeem points on purchase, track balances
+- **populate** – Seed your Blnk instance with sample identities, balances, and transactions
+- **webhook** – Handle Blnk webhooks in your application
+
 ## Contributing
 
 We welcome contributions! This repository grows through community contributions of demos that showcase different Blnk capabilities.
