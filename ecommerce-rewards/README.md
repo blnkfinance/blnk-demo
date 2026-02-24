@@ -5,20 +5,22 @@ This demo shows how to build a ledger-backed reward system for an e-commerce pla
 ## What This Demo Shows
 
 - **Ledgers**: Separate ledgers for customer real-money balances and reward balances
-- **Internal balances**: Using `@RewardsPool` and `@MerchantRevenue` as the source and destination of value
+- **Internal balances**: Using `@MerchantRevenue` as the source of rewards (rewards are issued directly from merchant revenue)
 - **Identities and balances**: One customer identity with a main wallet and a rewards wallet
-- **Transactions**: Purchase (customer → merchant), reward issuance (@RewardsPool → rewards wallet), and redemption (rewards wallet → main wallet)
+- **Bulk atomic transactions**: Purchase and reward issuance happen atomically in one bulk transaction (both succeed or both fail)
+- **Transactions**: Purchase (customer → merchant), reward issuance (@MerchantRevenue → rewards wallet), and redemption (rewards wallet → main wallet)
+- **Search API**: Looking up balances by `identity_id` when you have the customer but not their balance IDs (as in a real app after login)
 - **Balance lookup**: Reading the current reward balance via the balances API
 
 ## Workflow
 
 1. Create "Customer Wallets" and "Rewards Accounts" ledgers
-2. Create a customer identity and two balances (main and rewards)
-3. Fund the customer’s main wallet and the @RewardsPool so the demo can run
-4. Process a purchase: move money from customer to @MerchantRevenue
-5. Issue rewards: move 5% of the purchase from @RewardsPool to the customer’s rewards wallet
-6. Redeem some rewards: move value from rewards wallet back to the main wallet
-7. Fetch and log the customer’s current reward balance
+2. Create a customer identity (Sarah Shelton) and two balances (main and rewards)
+3. Fund the customer's main wallet so they can make purchases
+4. Process a purchase and issue rewards atomically: move $50 from customer to @MerchantRevenue, then move $2.50 (5%) from @MerchantRevenue to the customer's rewards wallet (using bulk transactions with `atomic: true`)
+5. Fetch customer balances via the Search API (`POST /search/balances` with `filter_by: identity_id`) — in your app you often have the customer's identity from login but not their balance IDs
+6. Redeem some rewards: move value from rewards wallet back to the main wallet (using the IDs from the search)
+7. Fetch and log the customer's current reward balance
 
 ## How to run
 

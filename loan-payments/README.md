@@ -1,12 +1,13 @@
 # Loan Payments Demo
 
-This demo shows how to build a simple loan workflow on top of the Blnk ledger. It matches the **LumenCredit** example from your blog post:
+This demo implements the **Lumen Credit** lending flow from the [Blnk lending article](https://guide.cloud.blnkfinance.com/start/guide), so you don’t give customers access to credit until eligibility checks pass.
 
-- Disburse a loan from a **Loan Wallet** to a **Main Wallet**
-- Charge interest from the **Loan Wallet** to **`@InterestRevenue`**
-- Collect repayments from the **Main Wallet** back to the **Loan Wallet**
+- **Ledgers:** **Customer Main Ledger** (main balances) and **Customers Loan Ledger** (loan balances), plus one identity and two balances per customer.
+- **Disburse:** Create an **inflight** overdraft from the customer’s loan balance to their main balance; run eligibility checks (KYC, limit, credit score); then **commit** (approve) or **void** (reject) the inflight transaction. Funds only hit the main balance after commit.
+- **Interest:** Move money from the **Loan balance** to **`@InterestRevenue`** (internal balance) with `allow_overdraft: true`.
+- **Repayments:** Move money from **Main balance** back to **Loan balance** with `allow_overdraft: false` so repayments fail if the customer has insufficient funds.
 
-All money movement is modeled as ledger transactions so you can see exactly how balances change at each step.
+All steps use ledger transactions so you can see how balances change and how inflight keeps disbursements safe.
 
 ## Prerequisites
 
@@ -34,11 +35,11 @@ bun run loan-payments/index.ts
 
 You should see log output for:
 
-1. Creating ledgers
-2. Creating a customer identity and wallets
-3. Disbursing a $500 loan
-4. Charging $5 interest
-5. Recording a $200 repayment
+1. Creating ledgers (Customer Main Ledger, Customers Loan Ledger)
+2. Creating a customer identity and wallets (main + loan)
+3. Creating an inflight disbursement for $500, then committing it (approve)
+4. Charging $5 interest to @InterestRevenue
+5. Recording a $200 repayment from main to loan
 
 After each step the script prints the current main and loan wallet balances so you can compare them with the examples in the article.
 

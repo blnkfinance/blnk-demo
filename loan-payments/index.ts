@@ -13,28 +13,28 @@ async function main() {
     console.log("Step 1: Creating ledgers...");
 
     const customerLedgerRes = await blnk.post("/ledgers", {
-      name: "Customer Accounts",
+      name: "Customer Main Ledger",
       meta_data: {
         description: "Contains all customer main balances for loan demo",
       },
     });
     const customerLedgerId = customerLedgerRes.data.ledger_id;
     if (!customerLedgerId) {
-      throw new Error("Failed to create Customer Accounts ledger");
+      throw new Error("Failed to create Customer Main Ledger");
     }
-    console.log("Customer Accounts ledger created:", customerLedgerId);
+    console.log("Customer Main Ledger created:", customerLedgerId);
 
     const loanLedgerRes = await blnk.post("/ledgers", {
-      name: "Loan Accounts",
+      name: "Customers Loan Ledger",
       meta_data: {
         description: "Contains all customer loan balances for loan demo",
       },
     });
     const loanLedgerId = loanLedgerRes.data.ledger_id;
     if (!loanLedgerId) {
-      throw new Error("Failed to create Loan Accounts ledger");
+      throw new Error("Failed to create Customers Loan Ledger");
     }
-    console.log("Loan Accounts ledger created:", loanLedgerId);
+    console.log("Customers Loan Ledger created:", loanLedgerId);
     console.log("");
 
     /**
@@ -92,16 +92,18 @@ async function main() {
     console.log("");
 
     /**
-     * Step 3: Disburse a loan.
+     * Step 3: Disburse a loan (using inflight so funds aren't available until we approve).
      *
-     * Money moves from the Loan Wallet (source) to the Main Wallet (destination).
-     * Loan wallet goes negative to represent debt; main wallet goes positive.
+     * Per the article: we record the loan as an overdraft from loan balance → main balance,
+     * but use inflight so the transaction is held until eligibility checks pass. Then we
+     * commit (approve) or void (reject). This prevents customers from accessing credit
+     * before they're allowed.
      */
-    console.log("Step 3: Disbursing a $500.00 loan...");
+    console.log("Step 3: Requesting a $500.00 loan (inflight)...");
 
     const disbursementRef = generateReference();
     const disbursementRes = await blnk.post("/transactions", {
-      amount: 50000, // $500.00 with precision 100
+      amount: 500, // $500.00 (API uses amount in currency units; precision 100 gives cents)
       precision: PRECISION,
       currency: "USD",
       reference: disbursementRef,
@@ -109,14 +111,31 @@ async function main() {
       destination: mainWalletId,
       description: "Loan disbursement to Alex",
       allow_overdraft: true,
-      skip_queue: true,
+      inflight: true,
       meta_data: {
         transaction_type: "loan_disbursement",
         customer_id: "CUST_001",
         loan_amount: 500,
       },
     });
-    console.log("Loan disbursement transaction:", disbursementRes.data.transaction_id);
+    const inflightTxnId = disbursementRes.data.transaction_id;
+    if (!inflightTxnId) throw new Error("Failed to create disbursement transaction");
+    console.log("Inflight disbursement created:", inflightTxnId);
+
+    // Simulate eligibility checks (KYC, loan limit, credit score, etc.)
+    const kyc = true;
+    const loanLimit = true;
+    const creditScore = true;
+    const approved = kyc && loanLimit && creditScore;
+
+    if (approved) {
+      await blnk.put(`/transactions/inflight/${inflightTxnId}`, { status: "commit" });
+      console.log("Loan approved (inflight committed).");
+    } else {
+      await blnk.put(`/transactions/inflight/${inflightTxnId}`, { status: "void" });
+      console.log("Loan rejected (inflight voided).");
+      throw new Error("Demo assumes approval; set kyc/loanLimit/creditScore to true to continue.");
+    }
 
     let mainBalance = await getBalance(mainWalletId);
     let loanBalance = await getBalance(loanWalletId);
@@ -133,10 +152,10 @@ async function main() {
      */
     console.log("Step 4: Charging 1% daily interest on the loan...");
 
-    const interestAmountDollars = 5; // 1% of 500 for this demo
+    const interestAmountDollars = 5; // 1% of $500 for this demo
     const interestRef = generateReference();
     const interestRes = await blnk.post("/transactions", {
-      amount: interestAmountDollars * PRECISION, // $5.00
+      amount: interestAmountDollars, // $5.00 (API amount in currency units)
       precision: PRECISION,
       currency: "USD",
       reference: interestRef,
@@ -170,7 +189,7 @@ async function main() {
 
     const repaymentRef = generateReference();
     const repaymentRes = await blnk.post("/transactions", {
-      amount: 20000, // $200.00
+      amount: 200, // $200.00 (API amount in currency units)
       precision: PRECISION,
       currency: "USD",
       reference: repaymentRef,

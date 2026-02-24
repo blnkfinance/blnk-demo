@@ -29,9 +29,9 @@ async function main() {
         console.log("Step 2: Creating customer identity and balances...");
         const identityRes = await blnk.post("/identities", {
             identity_type: "individual",
-            first_name: "Jane",
-            last_name: "Customer",
-            email_address: "jane.customer@example.com",
+            first_name: "Sarah",
+            last_name: "Shelton",
+            email_address: "sarah.shelton@example.com",
             meta_data: { customer_type: "ecommerce" },
         });
         const identityId = identityRes.data.identity_id;
@@ -59,7 +59,7 @@ async function main() {
         console.log("Rewards balance created:", rewardsBalanceId);
         console.log("");
 
-        console.log("Step 3: Funding customer wallet and RewardsPool...");
+        console.log("Step 3: Funding customer wallet...");
         await blnk.post("/transactions", {
             amount: 200,
             precision: PRECISION,
@@ -73,52 +73,63 @@ async function main() {
             meta_data: { transaction_type: "funding" },
         });
         console.log("Customer main wallet funded with $200.00");
-
-        await blnk.post("/transactions", {
-            amount: 1000,
-            precision: PRECISION,
-            currency: "USD",
-            source: "@WorldUSD",
-            destination: "@RewardsPool",
-            reference: generateReference(),
-            description: "Fund RewardsPool for issuing rewards",
-            allow_overdraft: true,
-            skip_queue: true,
-            meta_data: { transaction_type: "rewards_pool_funding" },
-        });
-        console.log("RewardsPool funded with $1000.00");
         console.log("");
 
         const purchaseAmount = 50;
-        console.log("Step 4: Processing purchase ($50.00)...");
-        const purchaseTx = await blnk.post("/transactions", {
-            amount: purchaseAmount,
-            precision: PRECISION,
-            currency: "USD",
-            source: mainBalanceId,
-            destination: "@MerchantRevenue",
-            reference: generateReference(),
-            description: "Customer purchase",
+        const rewardAmount = purchaseAmount * REWARD_RATE;
+        console.log("Step 4: Processing purchase and issuing rewards atomically ($50.00 purchase, $" + rewardAmount.toFixed(2) + " reward)...");
+        const bulkTx = await blnk.post("/transactions/bulk", {
+            atomic: true,
+            inflight: false,
             skip_queue: true,
-            meta_data: { transaction_type: "purchase" },
+            transactions: [
+                {
+                    amount: purchaseAmount,
+                    precision: PRECISION,
+                    currency: "USD",
+                    reference: generateReference(),
+                    source: mainBalanceId,
+                    destination: "@MerchantRevenue",
+                    description: "Customer purchase",
+                    meta_data: { transaction_type: "purchase" },
+                },
+                {
+                    amount: rewardAmount,
+                    precision: PRECISION,
+                    currency: "USD",
+                    reference: generateReference(),
+                    source: "@MerchantRevenue",
+                    destination: rewardsBalanceId,
+                    description: "Reward issued for purchase",
+                    meta_data: { transaction_type: "reward_earned", reward_rate: "5%" },
+                },
+            ],
         });
-        console.log("Purchase transaction created:", purchaseTx.data.transaction_id);
+        console.log("Bulk transaction created (batch_id):", bulkTx.data.batch_id);
+        console.log("Purchase and reward issued atomically - both succeed or both fail");
         console.log("");
 
-        const rewardAmount = purchaseAmount * REWARD_RATE;
-        console.log("Step 5: Issuing rewards (5% = $" + rewardAmount.toFixed(2) + ")...");
-        const rewardTx = await blnk.post("/transactions", {
-            amount: rewardAmount,
-            precision: PRECISION,
-            currency: "USD",
-            source: "@RewardsPool",
-            destination: rewardsBalanceId,
-            reference: generateReference(),
-            description: "Reward issued for purchase",
-            skip_queue: true,
-            meta_data: { transaction_type: "reward_earned", reward_rate: "5%" },
+        console.log("Step 5: Fetching customer balances via Search API...");
+        const searchRes = await blnk.post("/search/balances", {
+            q: "*",
+            filter_by: `identity_id:=${identityId}`,
+            sort_by: "created_at:desc",
         });
-        console.log("Reward issued:", rewardTx.data.transaction_id);
+        const hits = searchRes.data.hits ?? [];
+        let foundMainId: string | null = null;
+        let foundRewardsId: string | null = null;
+        for (const hit of hits) {
+            const doc = hit.document ?? {};
+            const lid = doc.ledger_id;
+            const bid = doc.balance_id;
+            if (lid === customerLedgerId) foundMainId = bid;
+            if (lid === rewardsLedgerId) foundRewardsId = bid;
+        }
+        if (!foundMainId) foundMainId = mainBalanceId;
+        if (!foundRewardsId) foundRewardsId = rewardsBalanceId;
+        console.log("Found main wallet:", foundMainId);
+        console.log("Found rewards wallet:", foundRewardsId);
+        console.log("(In your app you often have identity_id from login but not balance IDs - Search API lets you look them up)");
         console.log("");
 
         const redeemAmount = 1.5;
@@ -127,8 +138,8 @@ async function main() {
             amount: redeemAmount,
             precision: PRECISION,
             currency: "USD",
-            source: rewardsBalanceId,
-            destination: mainBalanceId,
+            source: foundRewardsId,
+            destination: foundMainId,
             reference: generateReference(),
             description: "Reward redemption",
             skip_queue: true,
@@ -138,7 +149,7 @@ async function main() {
         console.log("");
 
         console.log("Step 7: Checking reward balance...");
-        const balanceRes = await blnk.get(`/balances/${rewardsBalanceId}`);
+        const balanceRes = await blnk.get(`/balances/${foundRewardsId}`);
         const balance = balanceRes.data.balance;
         const availableRewards = balance / PRECISION;
         const updatedAt = balanceRes.data.updated_at ?? balanceRes.data.created_at;
