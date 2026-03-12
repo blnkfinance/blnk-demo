@@ -1,13 +1,13 @@
-# Recurring Payments Demo
+# Savings Goal Demo
 
-This demo implements the **StreamFlow** recurring payments flow from the [recurring payments with Blnk](https://guide.cloud.blnkfinance.com) article:
+This demo implements the **Kite** savings goal story from your article:
 
-- **Subscriptions Ledger** for customer balances used for recurring billing
-- **Marcus** as the example customer: identity and one balance
-- **Fund** Marcus’s balance from **`@World`** so the first charge can succeed
-- **Schedule** a single future charge from Marcus’s balance to **`@Revenue`** using `scheduled_for`
+- **Savings Ledger** to group all customer savings balances
+- **Mia** as the example customer: identity and one savings balance
+- **Schedule 3 deposits** in a single `/transactions/bulk` request using `scheduled_for`
+- Use **`@BankDeposits`** as the source (internal balance representing external inflows)
 
-When the scheduled time is reached, Blnk applies the transaction and sends a **`transaction.applied`** webhook. No extra “run” call is needed.
+When Mia activates her goal ($200/month for 3 months), all three deposits are scheduled upfront. Blnk applies each one automatically when its `scheduled_for` time is reached.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ BLNK_API_KEY=your_api_key_here
 BLNK_BASE_URL=http://localhost:5001
 ```
 
-The demo uses the shared `@resources/utils.ts` client and `@resources/generator.ts` from the repo root.
+The demo uses the shared `@resources/utils.ts` client from the repo root.
 
 ## How to run
 
@@ -34,33 +34,47 @@ bun run recurring-payments/index.ts
 
 You should see:
 
-1. Subscriptions Ledger created
-2. Identity created for Marcus
-3. Marcus’s balance created
-4. Marcus funded with $20 from @World
-5. A scheduled charge created ($10 to @Revenue) with status **QUEUED** and a `scheduled_for` time about **4 minutes** in the future
+1. Savings Ledger created
+2. Identity created for Mia
+3. Mia's savings balance created
+4. Bulk batch created with 3 scheduled deposits from `@BankDeposits` to Mia's balance
+5. Current savings balance fetched (will be $0.00 initially)
 
-When that time is reached, Blnk applies the charge and Marcus’s balance decreases by $10.
+All three deposits are scheduled for future dates (March, April, May 2026). They'll be applied automatically by Blnk as those dates arrive.
 
-**Optional: wait in the script for the charge to apply**
+## Tracking goal progress
 
-- **Default** (`RECURRING_WAIT_FOR_APPLY` not set or not `true`): the script exits right after creating the scheduled charge. The charge will still run at the scheduled time; you can check the balance later (e.g. via API or Blnk Cloud).
-- **Set `RECURRING_WAIT_FOR_APPLY=true`**: the script waits ~4 minutes for the scheduled time to pass, then fetches Marcus’s balance again and prints it so you see the $10 deduction in the same run. Use this when you want to see the “after” balance without calling the API yourself.
-
-```bash
-RECURRING_WAIT_FOR_APPLY=true bun run recurring-payments/index.ts
-```
-
-## Cancelling a scheduled charge
-
-To cancel the scheduled charge, create a **reversal** transaction: same amount and precision, **source** and **destination** swapped, and `scheduled_for` a few seconds **after** the original. See the article’s “Step 4: Cancelling a scheduled charge” for the exact request.
-
-## Fetching Marcus’s balance
+### Fetch Mia's savings balance
 
 ```bash
-curl -X GET "http://localhost:5001/balances/MARCUS_BALANCE_ID" \
+curl -X GET "http://localhost:5001/balances/MIA_SAVINGS_BALANCE_ID" \
   -H "Content-Type: application/json" \
   -H "X-blnk-key: YOUR_API_KEY"
 ```
 
-Use your Blnk base URL and API key. Amounts are in the smallest unit (e.g. cents); divide by `precision` (100 for USD) for display.
+Divide `balance` by `precision` (100) for display. `credit_balance` shows total deposits received; `debit_balance` shows withdrawals (stays at 0 for savings-only balances).
+
+### Query transactions by goal_id
+
+To see which deposits have run (`APPLIED`) vs which are still scheduled (`QUEUED`), query transactions by the `goal_id` in `meta_data`:
+
+```bash
+curl -X POST "http://localhost:5001/search/transactions" \
+  -H "Content-Type: application/json" \
+  -H "X-blnk-key: YOUR_API_KEY" \
+  -d '{
+    "q": "goal_mia_001",
+    "query_by": "meta_data.goal_id"
+  }'
+```
+
+Each transaction shows its `status` (`QUEUED` vs `APPLIED`) and `scheduled_for`, which you can use to build a goal progress view.
+
+## What this demo shows
+
+- **Fixed-duration recurring**: When you know the amount, frequency, and count upfront (e.g. "3 months"), you can schedule all occurrences in one bulk request
+- **Internal balances**: `@BankDeposits` is created automatically by Blnk when first referenced; it represents external funding sources
+- **Scheduled transactions**: Each deposit has its own `scheduled_for` timestamp; Blnk applies them automatically without additional API calls
+- **Goal tracking**: Use `goal_id` in `meta_data` to group and query all transactions for a specific savings goal
+
+This pattern works for any recurring payment with a **known duration**: installment plans, fixed-term subscriptions, scheduled loan repayments, or any flow where you know the amount and count upfront.

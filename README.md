@@ -8,7 +8,9 @@ This repository contains lightweight, end-to-end Blnk demos designed to help dev
 - **bulk-payroll** – Run payroll across multiple countries and currencies with bulk transactions
 - **customer-statements** – Generate customer statements from ledger data
 - **ecommerce-rewards** – Ledger-backed reward system: issue and redeem points on purchase, track balances
+- **loan-payments** – Loan disbursement, interest, and repayments with inflight and overdrafts
 - **populate** – Seed your Blnk instance with sample identities, balances, and transactions
+- **recurring-payments** – Schedule a future charge to @Revenue; fund from @World, cancel via reversal
 - **webhook** – Handle Blnk webhooks in your application
 
 ## Contributing
