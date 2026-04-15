@@ -1,0 +1,18 @@
+{
+  "name": "@blnk-demo/stripe-reconciliation",
+  "version": "0.1.0",
+  "description": "Stripe settlement reconciliation demo for Blnk",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@blnk-demo/resources": "workspace:*",
+    "stripe": "^18.2.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}
