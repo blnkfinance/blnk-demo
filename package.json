@@ -17,6 +17,7 @@
     "webhook",
     "customer-statements",
     "populate",
-    "resources"
+    "resources",
+    "stripe-reconciliation"
   ]
 }

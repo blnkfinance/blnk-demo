@@ -9,6 +9,7 @@ This repository contains lightweight, end-to-end Blnk demos designed to help dev
 - **customer-statements** – Generate customer statements from ledger data
 - **ecommerce-rewards** – Ledger-backed reward system: issue and redeem points on purchase, track balances
 - **populate** – Seed your Blnk instance with sample identities, balances, and transactions
+- **stripe-reconciliation** – Reconcile Stripe net settlements with Blnk ledger records
 - **webhook** – Handle Blnk webhooks in your application
 
 ## Contributing
