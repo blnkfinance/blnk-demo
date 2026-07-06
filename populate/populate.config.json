@@ -1,0 +1,22 @@
+{
+  "connection": {
+    "core_url": "http://localhost:5001",
+    "api_key": ""
+  },
+  "customer_ledger": {
+    "ledger_id": ""
+  },
+  "identities": {
+    "created_num": 100,
+    "balances_per_identity": ["USD","EUR","AUD","CAD"],
+    "local_currency": false
+  },
+  "transactions": {
+    "amount_range": {
+      "min": 100,
+      "max": 50000
+    },
+    "created_num": 59104
+  },
+  "use_internal_balances": false
+}
