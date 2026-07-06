@@ -1,0 +1,138 @@
+@import "../styles/font-inter-variable.css";
+@import "react-day-picker/style.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --platform-primary-text: #e6f5ff;
+    --platform-hover-bg: #15181a;
+    --platform-muted: #566873;
+    --platform-nav-text: #c3d0d9;
+    --platform-stroke: #1b1d1f;
+    --platform-nav-bg: #0e0f0f;
+    --platform-main-bg: #121314;
+    --platform-custom-green: #21d345;
+    --platform-custom-purple-void: #a34ef4;
+    --platform-muted-secondary: #778892;
+    --platform-brand-primary: #0979c6;
+    --platform-button-main-bg: var(--platform-brand-primary);
+    --platform-button-text-color: #e6f5ff;
+    --platform-button-text-button: var(--platform-brand-primary);
+    --platform-nav-text-selected: var(--platform-brand-primary);
+    --platform-brand-primary-muted: color-mix(
+      in srgb,
+      var(--platform-brand-primary) 10%,
+      transparent
+    );
+    --platform-bg: #121314;
+    --platform-input-border: #1b1d1f;
+    --platform-input-main-bg: #121314;
+    --platform-input-border-hover: color-mix(
+      in srgb,
+      var(--platform-brand-primary) 20%,
+      #000000
+    );
+    --platform-input-border-focus: color-mix(
+      in srgb,
+      var(--platform-nav-text) 28%,
+      var(--platform-input-border)
+    );
+    --platform-input-focus-glow: color-mix(
+      in srgb,
+      var(--platform-nav-text) 22%,
+      transparent
+    );
+    --platform-custom-red: #e04b22;
+
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  *:focus,
+  *:focus-visible {
+    outline: none;
+  }
+
+  body {
+    @apply bg-platform-main-bg text-platform-primary-text;
+    font-family: "Inter Variable", "Inter Fallback", Helvetica, sans-serif;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .input-focus-shadow:focus,
+  .input-focus-shadow:focus-visible {
+    box-shadow: 0 0 15px -3px var(--platform-input-focus-glow);
+    border-color: var(--platform-input-border-focus);
+  }
+}
+
+.rdp-root {
+  --rdp-accent-color: var(--platform-brand-primary);
+  --rdp-accent-background-color: var(--platform-brand-primary);
+  --rdp-today-color: var(--platform-primary-text);
+  --rdp-nav-height: 2rem;
+  --rdp-nav_button-height: 2rem;
+  --rdp-nav_button-width: 2rem;
+  color: var(--platform-primary-text);
+}
+
+.rdp-root .rdp-chevron {
+  fill: var(--platform-muted);
+}
+
+.rdp-root .rdp-button_previous,
+.rdp-root .rdp-button_next {
+  color: var(--platform-muted);
+}
+
+.rdp-root--dropdown-nav[data-nav-layout="around"] .rdp-month_caption {
+  margin-inline: 0;
+}
+
+.rdp-root--dropdown-nav[data-nav-layout="around"] .rdp-button_previous,
+.rdp-root--dropdown-nav[data-nav-layout="around"] .rdp-button_next {
+  position: static;
+  inset: auto;
+  height: var(--rdp-nav_button-height);
+}
+
+.rdp-root .rdp-day_button {
+  border: none;
+  border-radius: 9999px;
+}
+
+.rdp-root .rdp-day_button:hover:not(:disabled) {
+  background-color: var(--platform-hover-bg);
+}
+
+.rdp-root .rdp-selected {
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+.rdp-root .rdp-selected .rdp-day_button {
+  border: none;
+  background-color: var(--platform-brand-primary);
+  color: var(--platform-primary-text);
+}
+
+.rdp-root .rdp-selected .rdp-day_button:hover:not(:disabled) {
+  background-color: var(--platform-brand-primary);
+}
+
+.rdp-root .rdp-today:not(.rdp-outside):not(.rdp-selected) .rdp-day_button {
+  font-weight: 600;
+}

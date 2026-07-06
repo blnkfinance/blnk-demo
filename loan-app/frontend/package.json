@@ -1,0 +1,44 @@
+{
+  "name": "loan-app-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "test": "node --import tsx --test 'src/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.17",
+    "@radix-ui/react-popover": "^1.1.17",
+    "@radix-ui/react-select": "^2.3.1",
+    "@radix-ui/react-toast": "^1.2.17",
+    "@radix-ui/react-tooltip": "^1.2.10",
+    "@tanstack/react-table": "^8.21.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.21.0",
+    "motion": "^12.42.0",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-day-picker": "^9.14.0",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^2.6.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.3",
+    "typescript": "^5"
+  }
+}
