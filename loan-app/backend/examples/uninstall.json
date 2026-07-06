@@ -1,0 +1,7 @@
+{
+  "installed_app_id": "instapp_example123",
+  "app_id": "app_example456",
+  "instance_id": "inst_example789",
+  "uninstalled_at": "2026-06-27T12:00:00Z",
+  "idempotency_key": "uninstall:instapp_example123"
+}

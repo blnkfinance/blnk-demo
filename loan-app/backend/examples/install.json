@@ -1,0 +1,9 @@
+{
+  "installed_app_id": "instapp_example123",
+  "app_id": "app_example456",
+  "instance_id": "inst_example789",
+  "api_key": "blnk_live_replace_with_real_key",
+  "api_key_prefix": "blnk_live_abcd",
+  "granted_permissions": ["data:read", "data:write"],
+  "idempotency_key": "install:instapp_example123"
+}

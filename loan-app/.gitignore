@@ -1,0 +1,25 @@
+node_modules/
+.next/
+out/
+dist/
+backend/dist/
+backend/node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+backend/data/
+.env
+.env.local
+backend/.env
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+data/
+examples/
+!backend/examples/
+.DS_Store
+DOCS.md
+
+# local reference copy of blnk-dashboard
+blnk-dashboard/
