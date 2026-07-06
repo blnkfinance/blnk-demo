@@ -22,12 +22,6 @@ This demo shows how to build a ledger-backed reward system for an e-commerce pla
 
 ## How to run
 
-From the repo root, install dependencies (if needed):
-
-```bash
-pnpm install
-```
-
 From this directory:
 
 ```bash

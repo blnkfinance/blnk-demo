@@ -1,6 +1,0 @@
-packages:
-  - 'basic-wallet'
-  - 'webhook'
-  - 'customer-statements'
-  - 'populate'
-  - 'resources'
