@@ -1,0 +1,154 @@
+services:
+  # ── Go API ──────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: pro-loan-app-api:local
+    env_file:
+      - .env
+    environment:
+      PORT: "8080"
+      MONGO_URI: "mongodb://mongo:27017"
+      REDIS_ADDR: "redis:6379"
+      ADMIN_FRONTEND_URL: "http://localhost:3000"
+      CUSTOMER_FRONTEND_URL: "http://localhost:3001"
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── Background worker ────────────────────────────────────────────────
+  worker:
+    image: pro-loan-app-api:local
+    env_file:
+      - .env
+    environment:
+      MONGO_URI: "mongodb://mongo:27017"
+      REDIS_ADDR: "redis:6379"
+    entrypoint: ["/app/worker"]
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # ── One-shot seed command  (docker compose run seed) ─────────────────
+  seed:
+    image: pro-loan-app-api:local
+    env_file:
+      - .env
+    environment:
+      MONGO_URI: "mongodb://mongo:27017"
+    entrypoint: ["/app/seed"]
+    depends_on:
+      mongo:
+        condition: service_healthy
+    profiles:
+      - seed
+
+  # ── Admin web ────────────────────────────────────────────────────────
+  admin-web:
+    build:
+      context: ./admin-web
+      dockerfile: Dockerfile
+    image: pro-loan-app-admin-web:local
+    environment:
+      API_URL: "http://api:8080"
+      NEXT_PUBLIC_API_URL: "http://localhost:8080"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── Customer web ──────────────────────────────────────────────────────
+  customer-web:
+    build:
+      context: ./customer-web
+      dockerfile: Dockerfile
+    image: pro-loan-app-customer-web:local
+    environment:
+      API_URL: "http://api:8080"
+      NEXT_PUBLIC_API_URL: "http://localhost:8080"
+      PORT: "3001"
+    ports:
+      - "3001:3001"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── MongoDB ───────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # ── Redis ─────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+volumes:
+  mongo-data:
+  redis-data:

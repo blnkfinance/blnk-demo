@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #f1f5f9;
+}
+
+body {
+  margin: 0;
+  @apply bg-surface text-ink antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 55% at 50% -15%, rgba(16, 185, 129, 0.07), transparent),
+    radial-gradient(ellipse 50% 40% at 100% 10%, rgba(30, 58, 138, 0.06), transparent);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border bg-surface-elevated shadow-card;
+  }
+
+  .card-hover {
+    @apply card transition-all hover:border-secondary/30 hover:shadow-glow;
+  }
+
+  .btn-primary {
+    @apply rounded-xl bg-gradient-to-r from-secondary to-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-secondary/15 transition-all hover:from-emerald-500 hover:to-secondary disabled:opacity-50;
+  }
+
+  .btn-brand {
+    @apply rounded-xl bg-gradient-to-r from-brand-light to-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/15 transition-all hover:opacity-90 disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 text-sm text-ink outline-none placeholder:text-muted focus:border-secondary focus:ring-2 focus:ring-secondary/20;
+  }
+
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-wider text-muted;
+  }
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  @apply rounded-xl border border-border bg-surface-elevated text-ink outline-none placeholder:text-muted focus:border-secondary focus:ring-2 focus:ring-secondary/20;
+}
