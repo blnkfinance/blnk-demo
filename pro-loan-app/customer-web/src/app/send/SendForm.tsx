@@ -1,7 +1,11 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { getTransferFeesAction, sendMoneyAction } from "@/lib/wallet-actions";
+import {
+  getTransferFeesAction,
+  resolveRecipientAction,
+  sendMoneyAction,
+} from "@/lib/wallet-actions";
 
 function formatMoney(currency: string, cents: number) {
   return `${currency} ${(cents / 100).toLocaleString("en-US", {
@@ -26,6 +30,9 @@ export function SendForm({
   const [desc, setDesc] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [feeCents, setFeeCents] = useState(5000);
+  const [verifying, setVerifying] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [resolvedName, setResolvedName] = useState<string | null>(null);
 
   useEffect(() => {
     getTransferFeesAction(currency, recipientType === "external").then((fees) => {
@@ -33,10 +40,19 @@ export function SendForm({
     });
   }, [currency, recipientType]);
 
+  // Transfer errors arrive while still on confirm — jump back so the banner is visible.
+  useEffect(() => {
+    if (state?.error && confirming) {
+      setConfirming(false);
+      setLocalError(state.error);
+    }
+  }, [state?.error, confirming]);
+
   const amountCents = Math.round(parseFloat(amount || "0") * 100);
   const totalDebitCents = amountCents + feeCents;
   const sufficient = amountCents > 0 ? balance >= totalDebitCents : true;
   const displayCurrency = state?.currency ?? currency;
+  const errorMessage = localError ?? state?.error ?? null;
 
   if (state?.success) {
     return (
@@ -61,6 +77,8 @@ export function SendForm({
             setRecipient("");
             setDesc("");
             setConfirming(false);
+            setLocalError(null);
+            setResolvedName(null);
           }}
           className="mt-6 btn-primary"
         >
@@ -72,6 +90,8 @@ export function SendForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLocalError(null);
+
     if (confirming) {
       const formData = new FormData();
       formData.set("recipient_email", recipient);
@@ -80,15 +100,34 @@ export function SendForm({
       formData.set("amount", amount);
       formData.set("description", desc);
       formAction(formData);
-    } else {
-      setConfirming(true);
+      return;
     }
+
+    if (recipientType === "internal") {
+      setVerifying(true);
+      const result = await resolveRecipientAction(recipient);
+      setVerifying(false);
+      if ("error" in result && result.error) {
+        setLocalError(result.error);
+        setResolvedName(null);
+        return;
+      }
+      if ("recipient" in result && result.recipient) {
+        setRecipient(result.recipient.email);
+        setResolvedName(result.recipient.display_name);
+      }
+    } else {
+      setResolvedName(null);
+    }
+
+    setConfirming(true);
   }
 
   const balanceDisplay = formatMoney(currency, balance);
   const amountDisplay = formatMoney(currency, amountCents);
   const feeDisplay = formatMoney(currency, feeCents);
   const totalDisplay = formatMoney(currency, totalDebitCents);
+  const busy = pending || verifying;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -107,9 +146,11 @@ export function SendForm({
                 </label>
                 <select
                   value={recipientType}
-                  onChange={(e) =>
-                    setRecipientType(e.target.value as "internal" | "external")
-                  }
+                  onChange={(e) => {
+                    setRecipientType(e.target.value as "internal" | "external");
+                    setLocalError(null);
+                    setResolvedName(null);
+                  }}
                   className="input-field"
                 >
                   <option value="internal">ProBank user</option>
@@ -125,7 +166,11 @@ export function SendForm({
                   <input
                     type="email"
                     value={recipient}
-                    onChange={(e) => setRecipient(e.target.value)}
+                    onChange={(e) => {
+                      setRecipient(e.target.value);
+                      setLocalError(null);
+                      setResolvedName(null);
+                    }}
                     required
                     placeholder="jane@example.com"
                     className="input-field"
@@ -188,23 +233,27 @@ export function SendForm({
             )}
           </div>
 
-          {state?.error && (
+          {errorMessage && (
             <div className="rounded-xl bg-error/10 px-4 py-3 ring-1 ring-error/30">
-              <p className="text-sm font-medium text-error">{state.error}</p>
+              <p className="text-sm font-medium text-error">{errorMessage}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={
-              pending ||
+              busy ||
               !amount ||
               !sufficient ||
               (recipientType === "internal" && !recipient)
             }
             className="btn-primary disabled:cursor-not-allowed"
           >
-            {pending ? "Processing..." : "Continue"}
+            {verifying
+              ? "Verifying recipient..."
+              : pending
+                ? "Processing..."
+                : "Continue"}
           </button>
         </>
       ) : (
@@ -214,8 +263,19 @@ export function SendForm({
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">To</span>
-                <span className="text-ink font-medium">
-                  {recipientType === "internal" ? recipient : "@world"}
+                <span className="text-ink font-medium text-right">
+                  {recipientType === "internal" ? (
+                    <>
+                      {resolvedName && (
+                        <span className="block">{resolvedName}</span>
+                      )}
+                      <span className={resolvedName ? "text-xs text-muted" : ""}>
+                        {recipient}
+                      </span>
+                    </>
+                  ) : (
+                    "@world"
+                  )}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -239,17 +299,26 @@ export function SendForm({
             </div>
           </div>
 
+          {errorMessage && (
+            <div className="rounded-xl bg-error/10 px-4 py-3 ring-1 ring-error/30">
+              <p className="text-sm font-medium text-error">{errorMessage}</p>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => setConfirming(false)}
+              onClick={() => {
+                setConfirming(false);
+                setLocalError(null);
+              }}
               className="rounded-xl border border-border bg-surface-card px-6 py-3 text-sm font-semibold text-ink hover:bg-surface-elevated transition-colors flex-1"
             >
               Edit
             </button>
             <button
               type="submit"
-              disabled={pending}
+              disabled={busy}
               className="flex-1 btn-primary"
             >
               {pending ? "Sending..." : "Confirm & Send"}

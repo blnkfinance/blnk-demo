@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/blnk-demo/pro-loan-app/backend/internal/customer/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,7 +37,8 @@ func (r *MongoRepository) GetByID(ctx context.Context, id string) (*model.Custom
 
 func (r *MongoRepository) GetByEmail(ctx context.Context, email string) (*model.Customer, error) {
 	var c model.Customer
-	if err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&c); err != nil {
+	filter := bson.M{"email": bson.M{"$regex": "^" + regexp.QuoteMeta(email) + "$", "$options": "i"}}
+	if err := r.collection.FindOne(ctx, filter).Decode(&c); err != nil {
 		return nil, err
 	}
 	return &c, nil

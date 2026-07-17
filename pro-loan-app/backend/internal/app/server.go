@@ -200,6 +200,7 @@ func NewServer(ctx context.Context, cfg config.Config) (*Server, func(), error) 
 			r.Get("/customers/me/transactions", walletH.ListMyTransactions)
 			r.Get("/customers/me/transactions/{id}", walletH.GetMyTransaction)
 			r.Get("/config/transfer-fees", walletH.GetTransferFees)
+			r.Get("/transfers/resolve-recipient", walletH.ResolveRecipient)
 			r.Post("/transfers", walletH.Transfer)
 
 			// Loans — apply is customer action (rate-limited); transitions are admin-only.

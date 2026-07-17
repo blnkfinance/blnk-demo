@@ -144,6 +144,7 @@ func (s *walletService) Transfer(ctx context.Context, senderID string, input mod
 	counterparty := "@world"
 
 	if recipientType == "internal" {
+		input.RecipientEmail = strings.ToLower(strings.TrimSpace(input.RecipientEmail))
 		if input.RecipientEmail == "" {
 			return nil, fmt.Errorf("recipient_email is required for internal transfers")
 		}
@@ -308,6 +309,31 @@ func (s *walletService) linkPlatformIndicators(ctx context.Context, refs ...stri
 	for _, ref := range refs {
 		ledgersetup.TryLinkPlatformIdentity(ctx, s.blnkCl, plat.PlatformIdentityID, ref)
 	}
+}
+
+func (s *walletService) ResolveRecipient(ctx context.Context, senderID, email string) (*model.ResolvedRecipient, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return nil, fmt.Errorf("recipient_email is required")
+	}
+
+	recipient, err := s.customerRepo.GetByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("recipient not found")
+	}
+	if recipient.ID == senderID {
+		return nil, fmt.Errorf("cannot transfer to yourself")
+	}
+
+	name := strings.TrimSpace(recipient.FirstName + " " + recipient.LastName)
+	if name == "" {
+		name = recipient.Email
+	}
+
+	return &model.ResolvedRecipient{
+		Email:       recipient.Email,
+		DisplayName: name,
+	}, nil
 }
 
 func (s *walletService) TransferFeeConfig(ctx context.Context, currency string, external bool) (model.TransferFees, error) {

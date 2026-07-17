@@ -18,5 +18,6 @@ type Service interface {
 	Get(ctx context.Context, customerID, txID string) (*model.WalletTransaction, error)
 	List(ctx context.Context, customerID string, page, pageSize int) ([]*model.WalletTransaction, int64, error)
 	Transfer(ctx context.Context, senderID string, input model.TransferInput) (*model.TransferResult, error)
+	ResolveRecipient(ctx context.Context, senderID, email string) (*model.ResolvedRecipient, error)
 	TransferFeeConfig(ctx context.Context, currency string, external bool) (model.TransferFees, error)
 }

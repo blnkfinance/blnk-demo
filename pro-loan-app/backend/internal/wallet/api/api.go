@@ -104,6 +104,28 @@ func (h *Handler) GetTransferFees(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, fees)
 }
 
+func (h *Handler) ResolveRecipient(w http.ResponseWriter, r *http.Request) {
+	customerID := apimw.ClaimsFromContext(r.Context()).SubjectID
+	email := strings.TrimSpace(r.URL.Query().Get("email"))
+	if email == "" {
+		writeErr(w, http.StatusBadRequest, "recipient_email_required")
+		return
+	}
+
+	resolved, err := h.svc.ResolveRecipient(r.Context(), customerID, email)
+	if err != nil {
+		msg := err.Error()
+		status := http.StatusNotFound
+		if strings.Contains(msg, "yourself") || strings.Contains(msg, "required") {
+			status = http.StatusBadRequest
+		}
+		writeErr(w, status, msg)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resolved)
+}
+
 func (h *Handler) ListCustomerTransactions(w http.ResponseWriter, r *http.Request) {
 	customerID := chi.URLParam(r, "id")
 

@@ -3,6 +3,24 @@
 import { revalidatePath } from "next/cache";
 import { api } from "./api";
 
+export async function resolveRecipientAction(email: string) {
+  const trimmed = email.trim().toLowerCase();
+  if (!trimmed) {
+    return { error: "Recipient email is required" as const };
+  }
+
+  try {
+    const result = await api.get<{ email: string; display_name: string }>(
+      `/transfers/resolve-recipient?email=${encodeURIComponent(trimmed)}`
+    );
+    return { recipient: result };
+  } catch (e) {
+    return {
+      error: e instanceof Error ? e.message : "Recipient not found",
+    };
+  }
+}
+
 export async function sendMoneyAction(
   _prevState: unknown,
   formData: FormData

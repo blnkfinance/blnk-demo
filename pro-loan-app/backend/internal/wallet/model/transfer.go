@@ -14,6 +14,13 @@ type TransferFees struct {
 	TotalChargeCents int64 `json:"total_charge_cents"`
 }
 
+// ResolvedRecipient is the minimal public info returned when verifying an
+// internal transfer recipient by email.
+type ResolvedRecipient struct {
+	Email       string `json:"email"`
+	DisplayName string `json:"display_name"`
+}
+
 // TransferResult is returned after a successful transfer.
 type TransferResult struct {
 	SenderTx        *WalletTransaction `json:"sender_tx"`
