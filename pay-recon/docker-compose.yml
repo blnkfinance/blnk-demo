@@ -1,0 +1,144 @@
+services:
+  # ── Main PayRecon API ─────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: pay-recon-api:local
+    env_file:
+      - .env
+    environment:
+      PORT: "8090"
+      DATABASE_URL: "postgres://payrecon:payrecon@postgres-main:5432/pay_recon?sslmode=disable"
+      ADMIN_FRONTEND_URL: "http://localhost:8000"
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres-main:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8090/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+
+  worker:
+    image: pay-recon-api:local
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgres://payrecon:payrecon@postgres-main:5432/pay_recon?sslmode=disable"
+    entrypoint: ["/app/worker"]
+    depends_on:
+      postgres-main:
+        condition: service_healthy
+    restart: unless-stopped
+
+  seed:
+    image: pay-recon-api:local
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgres://payrecon:payrecon@postgres-main:5432/pay_recon?sslmode=disable"
+    entrypoint: ["/app/seed"]
+    depends_on:
+      postgres-main:
+        condition: service_healthy
+    profiles:
+      - seed
+
+  # ── Mock bank simulator (independent service) ────────────────────────
+  mock-bank:
+    build:
+      context: ./mock-bank
+      dockerfile: Dockerfile
+    image: pay-recon-mock-bank:local
+    env_file:
+      - .env
+    environment:
+      PORT: "8081"
+      POSTGRES_DSN: "postgres://mockbank:mockbank@postgres-mock-bank:5432/mock_bank?sslmode=disable"
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres-mock-bank:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+
+  # ── Accountant admin UI ───────────────────────────────────────────────
+  admin-web:
+    build:
+      context: ./admin-web
+      dockerfile: Dockerfile
+    image: pay-recon-admin-web:local
+    environment:
+      API_URL: "http://api:8090"
+      NEXT_PUBLIC_API_URL: "http://localhost:8090"
+      NEXT_PUBLIC_HORIZON_URL: "http://localhost:8080"
+      PORT: "8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Mock bank UI (separate product surface) ───────────────────────────
+  mock-bank-web:
+    build:
+      context: ./mock-bank-web
+      dockerfile: Dockerfile
+    image: pay-recon-mock-bank-web:local
+    environment:
+      MOCK_BANK_API_URL: "http://mock-bank:8081"
+      NEXT_PUBLIC_MOCK_BANK_API_URL: "http://localhost:8081"
+      NEXT_PUBLIC_ADMIN_URL: "http://localhost:8000"
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      mock-bank:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Postgres (main backend) ───────────────────────────────────────────
+  postgres-main:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: payrecon
+      POSTGRES_PASSWORD: payrecon
+      POSTGRES_DB: pay_recon
+    volumes:
+      - postgres_main_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payrecon -d pay_recon"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # ── Postgres (mock bank — separate instance, no shared schema) ─────────
+  postgres-mock-bank:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mockbank
+      POSTGRES_PASSWORD: mockbank
+      POSTGRES_DB: mock_bank
+    volumes:
+      - postgres_mock_bank_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mockbank -d mock_bank"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_main_data:
+  postgres_mock_bank_data:
