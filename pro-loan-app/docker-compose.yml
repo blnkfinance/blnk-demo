@@ -13,8 +13,9 @@ services:
       REDIS_ADDR: "redis:6379"
       ADMIN_FRONTEND_URL: "http://localhost:3100"
       CUSTOMER_FRONTEND_URL: "http://localhost:3101"
-    ports:
-      - "8080:8080"
+    # No host ports — Coolify/proxy routes by domain; services talk over the compose network.
+    expose:
+      - "8080"
     depends_on:
       mongo:
         condition: service_healthy
@@ -77,8 +78,8 @@ services:
       API_URL: "http://api:8080"
       NEXT_PUBLIC_API_URL: "http://localhost:8080"
       PORT: "3100"
-    ports:
-      - "3100:3100"
+    expose:
+      - "3100"
     depends_on:
       api:
         condition: service_healthy
@@ -99,8 +100,8 @@ services:
       API_URL: "http://api:8080"
       NEXT_PUBLIC_API_URL: "http://localhost:8080"
       PORT: "3101"
-    ports:
-      - "3101:3101"
+    expose:
+      - "3101"
     depends_on:
       api:
         condition: service_healthy
@@ -114,8 +115,7 @@ services:
   # ── MongoDB ───────────────────────────────────────────────────────────
   mongo:
     image: mongo:7
-    ports:
-      - "27017:27017"
+    # Internal only — do not publish 27017 on the host (conflicts on Coolify).
     volumes:
       - mongo-data:/data/db
     healthcheck:
@@ -134,8 +134,7 @@ services:
   redis:
     image: redis:7-alpine
     command: redis-server --appendonly yes
-    ports:
-      - "6379:6379"
+    # Internal only — do not publish 6379 on the host (conflicts on Coolify).
     volumes:
       - redis-data:/data
     healthcheck:

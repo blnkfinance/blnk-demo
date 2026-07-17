@@ -48,6 +48,11 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
+Local host ports come from [`docker-compose.override.yml`](docker-compose.override.yml)
+(auto-merged by Compose). Production/Coolify uses [`docker-compose.yml`](docker-compose.yml)
+only — services stay on the internal network; no host binds for Mongo/Redis (avoids
+`port is already allocated` conflicts).
+
 ### 3. Seed demo data (first run)
 
 ```bash
