@@ -6,8 +6,8 @@ Blnk Cloud/Core is used as the external ledger — only your own application inf
 ## Architecture
 
 ```
-Admin Next.js App (port 3000)  ─┐
-Customer Next.js App (port 3001) ─┤─► Go API (port 8080) ─► MongoDB + Redis
+Admin Next.js App (port 3100)  ─┐
+Customer Next.js App (port 3101) ─┤─► Go API (port 8080) ─► MongoDB + Redis
 Go Worker (background)           ─┘         │
                                              └─► Blnk Cloud/Core API (external)
 ```
@@ -18,8 +18,8 @@ Go Worker (background)           ─┘         │
 |----------------|-------|---------------------------------------------------|
 | `api`          | 8080  | Go HTTP API — auth, customers, loans, products    |
 | `worker`       | —     | Daily cron: marks due/overdue schedule lines      |
-| `admin-web`    | 3000  | Next.js admin dashboard                           |
-| `customer-web` | 3001  | Next.js customer portal                           |
+| `admin-web`    | 3100  | Next.js admin dashboard                           |
+| `customer-web` | 3101  | Next.js customer portal                           |
 | `mongo`        | 27017 | MongoDB 7 — primary application database          |
 | `redis`        | 6379  | Redis 7 — caching and rate limiting               |
 
@@ -59,8 +59,8 @@ seed admin account (`admin@example.com` / `Admin1234!`).
 
 ### 4. Open the apps
 
-- **Admin dashboard**: http://localhost:3000 — log in with `admin@example.com` / `Admin1234!`
-- **Customer portal**: http://localhost:3001 — register or use `demo@example.com` / `demo1234`
+- **Admin dashboard**: http://localhost:3100 — log in with `admin@example.com` / `Admin1234!`
+- **Customer portal**: http://localhost:3101 — register or use `demo@example.com` / `demo1234`
 - **API health**: http://localhost:8080/health
 
 ---

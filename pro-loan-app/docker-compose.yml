@@ -11,8 +11,8 @@ services:
       PORT: "8080"
       MONGO_URI: "mongodb://mongo:27017"
       REDIS_ADDR: "redis:6379"
-      ADMIN_FRONTEND_URL: "http://localhost:3000"
-      CUSTOMER_FRONTEND_URL: "http://localhost:3001"
+      ADMIN_FRONTEND_URL: "http://localhost:3100"
+      CUSTOMER_FRONTEND_URL: "http://localhost:3101"
     ports:
       - "8080:8080"
     depends_on:
@@ -76,8 +76,9 @@ services:
     environment:
       API_URL: "http://api:8080"
       NEXT_PUBLIC_API_URL: "http://localhost:8080"
+      PORT: "3100"
     ports:
-      - "3000:3000"
+      - "3100:3100"
     depends_on:
       api:
         condition: service_healthy
@@ -97,9 +98,9 @@ services:
     environment:
       API_URL: "http://api:8080"
       NEXT_PUBLIC_API_URL: "http://localhost:8080"
-      PORT: "3001"
+      PORT: "3101"
     ports:
-      - "3001:3001"
+      - "3101:3101"
     depends_on:
       api:
         condition: service_healthy
