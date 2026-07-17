@@ -48,10 +48,10 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
-Local host ports come from [`docker-compose.override.yml`](docker-compose.override.yml)
-(auto-merged by Compose). Production/Coolify uses [`docker-compose.yml`](docker-compose.yml)
-only — services stay on the internal network; no host binds for Mongo/Redis (avoids
-`port is already allocated` conflicts).
+Local host ports for mongo/redis come from [`docker-compose.override.yml`](docker-compose.override.yml)
+(auto-merged locally). The main compose file publishes api (`8080`), admin-web
+(`3100`), and customer-web (`3101`) for Coolify/Traefik; mongo and redis stay
+internal on production deploys.
 
 ### 3. Seed demo data (first run)
 
