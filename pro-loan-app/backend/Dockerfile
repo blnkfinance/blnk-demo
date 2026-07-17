@@ -22,9 +22,9 @@ COPY --from=build /out/worker /app/worker
 COPY --from=build /out/seed   /app/seed
 
 USER app
-EXPOSE 8080
+EXPOSE 8180
 
 HEALTHCHECK --interval=10s --timeout=3s --retries=6 \
-  CMD wget -qO- http://localhost:8080/health || exit 1
+  CMD wget -qO- http://localhost:8180/health || exit 1
 
 ENTRYPOINT ["/app/api"]

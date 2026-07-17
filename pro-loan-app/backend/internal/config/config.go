@@ -27,7 +27,7 @@ type Config struct {
 func Load() (Config, error) {
 	cfg := Config{
 		Environment:         getenv("APP_ENV", "development"),
-		Port:                getenv("PORT", "8080"),
+		Port:                getenv("PORT", "8180"),
 		MongoURI:            getenv("MONGO_URI", "mongodb://mongo:27017"),
 		MongoDatabase:       getenv("MONGO_DATABASE", "pro_loan_app"),
 		RedisAddr:           getenv("REDIS_ADDR", "redis:6379"),

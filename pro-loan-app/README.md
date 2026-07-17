@@ -7,7 +7,7 @@ Blnk Cloud/Core is used as the external ledger — only your own application inf
 
 ```
 Admin Next.js App (port 3100)  ─┐
-Customer Next.js App (port 3101) ─┤─► Go API (port 8080) ─► MongoDB + Redis
+Customer Next.js App (port 3101) ─┤─► Go API (port 8180) ─► MongoDB + Redis
 Go Worker (background)           ─┘         │
                                              └─► Blnk Cloud/Core API (external)
 ```
@@ -16,7 +16,7 @@ Go Worker (background)           ─┘         │
 
 | Service        | Port  | Description                                       |
 |----------------|-------|---------------------------------------------------|
-| `api`          | 8080  | Go HTTP API — auth, customers, loans, products    |
+| `api`          | 8180  | Go HTTP API — auth, customers, loans, products    |
 | `worker`       | —     | Daily cron: marks due/overdue schedule lines      |
 | `admin-web`    | 3100  | Next.js admin dashboard                           |
 | `customer-web` | 3101  | Next.js customer portal                           |
@@ -49,7 +49,7 @@ docker compose up --build -d
 ```
 
 Local host ports for mongo/redis come from [`docker-compose.override.yml`](docker-compose.override.yml)
-(auto-merged locally). The main compose file publishes api (`8080`), admin-web
+(auto-merged locally). The main compose file publishes api (`8180`), admin-web
 (`3100`), and customer-web (`3101`) for Coolify/Traefik; mongo and redis stay
 internal on production deploys.
 
@@ -66,7 +66,7 @@ seed admin account (`admin@example.com` / `Admin1234!`).
 
 - **Admin dashboard**: http://localhost:3100 — log in with `admin@example.com` / `Admin1234!`
 - **Customer portal**: http://localhost:3101 — register or use `demo@example.com` / `demo1234`
-- **API health**: http://localhost:8080/health
+- **API health**: http://localhost:8180/health
 
 ---
 
@@ -85,7 +85,7 @@ seed admin account (`admin@example.com` / `Admin1234!`).
 | `APP_ENV`              |          | `development`        | Set to `production` to enforce secret validation     |
 | `ADMIN_FRONTEND_URL`   |          | `http://localhost:3100` | Public admin app URL (CORS / redirects)           |
 | `CUSTOMER_FRONTEND_URL`|          | `http://localhost:3101` | Public customer app URL (CORS / redirects)        |
-| `NEXT_PUBLIC_API_URL`  |          | `http://localhost:8080` | Public API URL for browser clients                |
+| `NEXT_PUBLIC_API_URL`  |          | `http://localhost:8180` | Public API URL for browser clients                |
 
 > **Note:** `ADMIN_EMAIL` and `ADMIN_PASSWORD` are no longer used.  Admin accounts are managed
 > through the API. Use `POST /api/v1/admins/bootstrap` to create the first admin, or run the

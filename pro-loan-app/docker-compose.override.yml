@@ -1,0 +1,10 @@
+# Local-only: publish mongo/redis on the host for debugging. Coolify uses
+# docker-compose.yml alone (override is not merged when -f docker-compose.yml is used).
+services:
+  mongo:
+    ports:
+      - "27017:27017"
+
+  redis:
+    ports:
+      - "6379:6379"
