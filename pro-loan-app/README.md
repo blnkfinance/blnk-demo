@@ -82,7 +82,10 @@ seed admin account (`admin@example.com` / `Admin1234!`).
 | `REDIS_ADDR`           |          | `redis:6379`         | Redis address                                        |
 | `REDIS_PASSWORD`       |          | —                    | Redis password (empty = no auth)                     |
 | `AUTH_SECRET`          | ✓        | `change-me-in-production` | HMAC secret for JWT session tokens. **Must be set in production.** |
-| `ENVIRONMENT`          |          | `development`        | Set to `production` to enforce secret validation     |
+| `APP_ENV`              |          | `development`        | Set to `production` to enforce secret validation     |
+| `ADMIN_FRONTEND_URL`   |          | `http://localhost:3100` | Public admin app URL (CORS / redirects)           |
+| `CUSTOMER_FRONTEND_URL`|          | `http://localhost:3101` | Public customer app URL (CORS / redirects)        |
+| `NEXT_PUBLIC_API_URL`  |          | `http://localhost:8080` | Public API URL for browser clients                |
 
 > **Note:** `ADMIN_EMAIL` and `ADMIN_PASSWORD` are no longer used.  Admin accounts are managed
 > through the API. Use `POST /api/v1/admins/bootstrap` to create the first admin, or run the
@@ -226,7 +229,7 @@ MONGO_URI=mongodb://localhost:27017 go run ./cmd/seed
 
 ## Security Notes
 
-- **`AUTH_SECRET`** must be a long random string in production. If `ENVIRONMENT=production`
+- **`AUTH_SECRET`** must be a long random string in production. If `APP_ENV=production`
   and the value is still `change-me-in-production`, the API will refuse to start.
 - **`BLNK_WEBHOOK_SECRET`** should be set in production so that incoming Blnk webhook
   payloads are HMAC-verified. Missing it in production emits a startup warning.
@@ -238,7 +241,7 @@ MONGO_URI=mongodb://localhost:27017 go run ./cmd/seed
 ## Production Considerations
 
 - Set a strong `AUTH_SECRET` and `BLNK_WEBHOOK_SECRET`.
-- Set `ENVIRONMENT=production` to enable secret validation at startup.
+- Set `APP_ENV=production` to enable secret validation at startup.
 - Enable MongoDB authentication and TLS for non-local deployments.
 - Pin `NEXT_PUBLIC_API_URL` to your public API hostname.
 - Use a reverse proxy (nginx/Caddy) to terminate TLS in front of all services.
