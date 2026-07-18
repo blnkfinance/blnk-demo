@@ -38,13 +38,15 @@ services:
 
   # ── Background worker ────────────────────────────────────────────────
   worker:
-    image: pro-loan-app-api:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    image: pro-loan-app-worker:local
     env_file:
       - .env
     environment:
       MONGO_URI: "mongodb://mongo:27017"
       REDIS_ADDR: "redis:6379"
-    entrypoint: ["/app/worker"]
     depends_on:
       mongo:
         condition: service_healthy
@@ -147,7 +149,8 @@ services:
   # ── MongoDB ───────────────────────────────────────────────────────────
   mongo:
     image: mongo:7
-    # Internal only — do not publish 27017 on the host (conflicts on Coolify).
+    ports:
+      - "27017:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:
@@ -166,7 +169,8 @@ services:
   redis:
     image: redis:7-alpine
     command: redis-server --appendonly yes
-    # Internal only — do not publish 6379 on the host (conflicts on Coolify).
+    ports:
+      - "6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:

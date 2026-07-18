@@ -48,10 +48,11 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
-Local host ports for mongo/redis come from [`docker-compose.override.yml`](docker-compose.override.yml)
-(auto-merged locally). The main compose file publishes api (`8180`), admin-web
-(`3100`), and customer-web (`3101`) for Coolify/Traefik; mongo and redis stay
-internal on production deploys.
+Compose publishes all service ports on localhost for local development (api
+`8180`, admin-web `3100`, customer-web `3101`, mongo `27017`, redis `6379`).
+Connect Compass to `mongodb://localhost:27017` (database `pro_loan_app`).
+Production on Coolify uses standalone Dockerfiles and managed Mongo/Redis — this
+compose file is for local use only.
 
 ### 3. Seed demo data (first run)
 
